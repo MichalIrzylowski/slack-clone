@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link, useParams } from "react-router";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -17,12 +18,14 @@ interface Channel {
   updatedAt?: string;
 }
 
-export const ChannelSection: React.FC<{ currentChannelId: string }> = ({
+export const ChannelSection: React.FC<{ currentChannelId?: string }> = ({
   currentChannelId,
 }) => {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { channelId: routeChannelId } = useParams();
+  const activeChannelId = currentChannelId || routeChannelId;
 
   useEffect(() => {
     const abort = new AbortController();
@@ -88,11 +91,20 @@ export const ChannelSection: React.FC<{ currentChannelId: string }> = ({
           )}
           {!loading &&
             !error &&
-            channels.map((channels) => (
-              <SidebarMenuItem key={channels.id}>
-                <SidebarMenuButton isActive={channels.id === currentChannelId}>
-                  <HashIcon className="text-muted-foreground" />
-                  <span>#{channels.name}</span>
+            channels.map((channel) => (
+              <SidebarMenuItem key={channel.id}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={channel.id === activeChannelId}
+                  tooltip={channel.name}
+                >
+                  <Link
+                    to={`/channels/${channel.id}`}
+                    className="flex items-center gap-2"
+                  >
+                    <HashIcon className="text-muted-foreground" />
+                    <span>#{channel.name}</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}

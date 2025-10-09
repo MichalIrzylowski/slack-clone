@@ -9,11 +9,11 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { WorkspaceHeader } from "./MainLayout/WorkspaceHeader";
-import { ChannelSection } from "./MainLayout/ChannelSection";
-import { DMSection } from "./MainLayout/DMSection";
-import { UserPresence } from "./MainLayout/UserPresence";
-import { TopBar } from "./MainLayout/TopBar";
+import { WorkspaceHeader } from "./main-layout/workspace-header";
+import { ChannelSection } from "./main-layout/channels-section";
+import { DMSection } from "./main-layout/dm-section";
+import { UserPresence } from "./main-layout/user-presence";
+import { TopBar } from "./main-layout/top-bar";
 
 type MainLayoutProps = { currentChannelId?: string };
 

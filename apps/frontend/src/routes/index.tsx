@@ -1,7 +1,8 @@
-import { Routes as LibRoutes, Route } from "react-router";
-import { Home } from "./home/main";
-import MainLayout from "@/components/Layouts/MainLayout";
-import AuthLayout from "@/components/Layouts/AuthLayout";
+import { Routes as LibRoutes, Route, useParams } from "react-router";
+import { Home } from "./home/home";
+import MainLayout from "@/components/layouts/main-layout";
+import ChannelPage from "./channels/channels";
+import AuthLayout from "@/components/layouts/auth-layout";
 import React from "react";
 
 // Placeholder Login component (replace with real implementation later)
@@ -43,6 +44,12 @@ const Login = React.lazy(() =>
   })
 );
 
+// Wrapper to extract channelId param for MainLayout active highlighting
+const ChannelLayoutWrapper: React.FC = () => {
+  const { channelId } = useParams();
+  return <MainLayout currentChannelId={channelId} />;
+};
+
 export const Routes = () => (
   <LibRoutes>
     {/* Auth routes */}
@@ -52,6 +59,9 @@ export const Routes = () => (
     {/* App shell routes */}
     <Route element={<MainLayout />}>
       <Route path="/" element={<Home />} />
+    </Route>
+    <Route element={<ChannelLayoutWrapper />}>
+      <Route path="/channels/:channelId" element={<ChannelPage />} />
     </Route>
   </LibRoutes>
 );
