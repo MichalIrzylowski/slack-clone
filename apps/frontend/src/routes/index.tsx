@@ -4,45 +4,32 @@ import MainLayout from "@/components/layouts/main-layout";
 import ChannelPage from "./channels/channels";
 import AuthLayout from "@/components/layouts/auth-layout";
 import React from "react";
+import { useAuth } from "@/auth/useAuth";
+import { useLocation, Navigate, Outlet } from "react-router";
+import Login from "./auth/login";
 
-// Placeholder Login component (replace with real implementation later)
-const Login = React.lazy(() =>
-  Promise.resolve({
-    default: () => (
-      <div className="space-y-4">
-        <h1 className="text-xl font-semibold text-center">Login</h1>
-        <form className="space-y-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium" htmlFor="email">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              className="h-9 rounded-md border bg-transparent px-3 text-sm"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium" htmlFor="password">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              className="h-9 rounded-md border bg-transparent px-3 text-sm"
-            />
-          </div>
-          <button
-            type="submit"
-            className="h-9 w-full rounded-md bg-primary text-primary-foreground text-sm font-medium"
-          >
-            Sign In
-          </button>
-        </form>
-      </div>
-    ),
-  })
-);
+// Protected route wrapper: requires authentication
+const ProtectedRoute: React.FC = () => {
+  const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
+  if (loading) return <div className="p-6 text-sm">Loading...</div>;
+  if (!isAuthenticated)
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  return <Outlet />;
+};
+
+// Guest route wrapper: redirects authenticated users away from auth pages
+const GuestRoute: React.FC = () => {
+  const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
+  if (loading) return <div className="p-6 text-sm">Loading...</div>;
+  if (isAuthenticated) {
+    const state = location.state as { from?: { pathname?: string } } | null;
+    const redirectTo = state?.from?.pathname || "/";
+    return <Navigate to={redirectTo} replace />;
+  }
+  return <Outlet />;
+};
 
 // Wrapper to extract channelId param for MainLayout active highlighting
 const ChannelLayoutWrapper: React.FC = () => {
@@ -52,16 +39,20 @@ const ChannelLayoutWrapper: React.FC = () => {
 
 export const Routes = () => (
   <LibRoutes>
-    {/* Auth routes */}
-    <Route element={<AuthLayout />}>
-      <Route path="/login" element={<Login />} />
+    {/* Guest only */}
+    <Route element={<GuestRoute />}>
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<Login />} />
+      </Route>
     </Route>
-    {/* App shell routes */}
-    <Route element={<MainLayout />}>
-      <Route path="/" element={<Home />} />
-    </Route>
-    <Route element={<ChannelLayoutWrapper />}>
-      <Route path="/channels/:channelId" element={<ChannelPage />} />
+    {/* Protected app */}
+    <Route element={<ProtectedRoute />}>
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<Home />} />
+      </Route>
+      <Route element={<ChannelLayoutWrapper />}>
+        <Route path="/channels/:channelId" element={<ChannelPage />} />
+      </Route>
     </Route>
   </LibRoutes>
 );

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { HashIcon } from "lucide-react";
 import { ChannelCreateSheet } from "./channel-create-sheet";
+import { useAuth } from "@/auth/useAuth";
 
 interface Channel {
   id: string;
@@ -21,6 +22,7 @@ interface Channel {
 export const ChannelSection: React.FC<{ currentChannelId?: string }> = ({
   currentChannelId,
 }) => {
+  const { token } = useAuth();
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,14 +39,16 @@ export const ChannelSection: React.FC<{ currentChannelId?: string }> = ({
         if (!base) {
           throw new Error("VITE_BACKEND_URL is not defined");
         }
+        const headers: Record<string, string> = {};
+        if (token) headers.Authorization = `Bearer ${token}`;
         const response = await fetch(`${base}/channels`, {
           signal: abort.signal,
+          headers,
         });
         if (!response.ok) {
           throw new Error(`Request failed: ${response.status}`);
         }
         const raw = await response.json();
-        // Support both legacy array response and new paginated {items,nextCursor}
         const data: Channel[] = Array.isArray(raw) ? raw : raw.items;
         setChannels(data || []);
       } catch (err) {
@@ -58,7 +62,7 @@ export const ChannelSection: React.FC<{ currentChannelId?: string }> = ({
     };
     fetchChannels();
     return () => abort.abort();
-  }, []);
+  }, [token]);
 
   const appendChannel = (ch: Channel) => {
     setChannels((prev) => [...prev, ch]);

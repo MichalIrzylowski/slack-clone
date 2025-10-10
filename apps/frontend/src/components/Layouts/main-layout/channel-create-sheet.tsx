@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusIcon, LockIcon, HashIcon } from "lucide-react";
+import { useAuth } from "@/auth/useAuth";
 
 export interface CreateChannelValues {
   name: string;
@@ -31,6 +32,7 @@ export const ChannelCreateSheet: React.FC<Props> = ({ onCreated }) => {
   const [open, setOpen] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const { token, isAuthenticated } = useAuth();
   const {
     register,
     handleSubmit,
@@ -62,9 +64,13 @@ export const ChannelCreateSheet: React.FC<Props> = ({ onCreated }) => {
       setError(null);
       const base = import.meta.env.VITE_BACKEND_URL;
       if (!base) throw new Error("VITE_BACKEND_URL not set");
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (token) headers.Authorization = `Bearer ${token}`;
       const res = await fetch(`${base}/channels`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(values),
       });
       if (!res.ok) {
@@ -100,6 +106,8 @@ export const ChannelCreateSheet: React.FC<Props> = ({ onCreated }) => {
           variant="ghost"
           className="size-6"
           aria-label="Add channel"
+          disabled={!isAuthenticated}
+          title={!isAuthenticated ? "Login required" : undefined}
         >
           <PlusIcon className="size-4" />
         </Button>
