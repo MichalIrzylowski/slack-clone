@@ -34,13 +34,23 @@ export class AuthController {
   })
   @ApiResponse({ status: 201, description: 'Admin user created' })
   async initAdmin(@Body() dto: CreateUserDto) {
-    return this.users.createInitialAdmin(dto.name, dto.password);
+    return this.users.createInitialAdmin(dto.email, dto.password, dto.username);
   }
 
   @Post('login')
   @ApiOperation({ summary: 'Login and obtain a JWT access token' })
   async login(@Body() dto: LoginDto) {
-    return this.auth.login(dto.name, dto.password);
+    return this.auth.login(dto.email, dto.password);
+  }
+
+  @Post('register')
+  @ApiOperation({ summary: 'Register a new user (ADMIN only)' })
+  @ApiResponse({ status: 201, description: 'User created' })
+  @ApiBearerAuth('jwt-auth')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN')
+  async register(@Body() dto: CreateUserDto) {
+    return this.users.createUser(dto.email, dto.password, dto.username);
   }
 
   @Get('me')

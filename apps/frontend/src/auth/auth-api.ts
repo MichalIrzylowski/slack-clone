@@ -9,12 +9,12 @@ export interface AuthUser {
 const BACKEND = import.meta.env.VITE_BACKEND_URL;
 if (!BACKEND) console.warn("VITE_BACKEND_URL not set");
 
-export async function loginRequest(name: string, password: string) {
+export async function loginRequest(email: string, password: string) {
   if (!BACKEND) throw new Error("Backend URL not configured");
   const res = await fetch(`${BACKEND}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, password }),
+    body: JSON.stringify({ email, password }),
   });
   if (!res.ok) {
     const txt = await res.text();

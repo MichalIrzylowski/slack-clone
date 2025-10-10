@@ -25,7 +25,8 @@ model Channel {
 
 model User {
   id           String   @id @default(cuid())
-  name         String   @unique
+  email        String   @unique
+  username     String   @unique
   passwordHash String
   role         String   @default("USER") // Values: USER | ADMIN (enforced in service layer)
   createdAt    DateTime @default(now())

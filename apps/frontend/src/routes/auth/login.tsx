@@ -8,35 +8,31 @@ interface RedirectState {
 }
 
 export const Login: React.FC = () => {
-  const { login } = useAuth();
+  const { login, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = React.useState<string | null>(null);
-  const [submitting, setSubmitting] = React.useState(false);
   const { register, handleSubmit } = useForm<{
-    name: string;
+    email: string;
     password: string;
   }>({
-    defaultValues: { name: "", password: "" },
+    defaultValues: { email: "", password: "" },
   });
 
   const onSubmit = handleSubmit(async (values) => {
     setError(null);
-    if (!values.name.trim() || !values.password) {
-      setError("Name and password required");
+    if (!values.email.trim() || !values.password) {
+      setError("Email and password required");
       return;
     }
     try {
-      setSubmitting(true);
-      await login(values.name.trim().toLowerCase(), values.password);
+      await login(values.email.trim().toLowerCase(), values.password);
       const state = location.state as RedirectState | null;
       const redirectTo = state?.from?.pathname || "/";
       navigate(redirectTo, { replace: true });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Login failed";
       setError(msg);
-    } finally {
-      setSubmitting(false);
     }
   });
 
@@ -45,15 +41,15 @@ export const Login: React.FC = () => {
       <h1 className="text-xl font-semibold text-center">Login</h1>
       <form onSubmit={onSubmit} className="space-y-3">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium" htmlFor="name">
-            Username
+          <label className="text-xs font-medium" htmlFor="email">
+            Email
           </label>
           <input
-            id="name"
-            type="text"
-            autoComplete="username"
+            id="email"
+            type="email"
+            autoComplete="email"
             className="h-9 rounded-md border bg-transparent px-3 text-sm"
-            {...register("name")}
+            {...register("email")}
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -75,10 +71,10 @@ export const Login: React.FC = () => {
         )}
         <button
           type="submit"
-          disabled={submitting}
+          disabled={isLoading}
           className="h-9 w-full rounded-md bg-primary text-primary-foreground text-sm font-medium"
         >
-          {submitting ? "Signing in..." : "Sign In"}
+          {isLoading ? "Signing in..." : "Sign In"}
         </button>
       </form>
       <p className="text-[10px] text-muted-foreground text-center">

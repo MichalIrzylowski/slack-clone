@@ -8,6 +8,7 @@ describe('Auth & Channels (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let adminToken: string;
+  let userToken: string;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -38,25 +39,87 @@ describe('Auth & Channels (e2e)', () => {
   it('initial admin creation succeeds when no users', async () => {
     const res = await request(app.getHttpServer())
       .post('/auth/init-admin')
-      .send({ name: 'AdminUser', password: 'Password123!' });
+      .send({
+        email: 'admin@example.com',
+        username: 'AdminUser',
+        password: 'Password123!',
+      });
     expect(res.status).toBe(201);
     expect(res.body.role).toBe('ADMIN');
+    expect(res.body.email).toBe('admin@example.com');
+    expect(res.body.username).toBe('adminuser');
   });
 
   it('initial admin creation blocked when users exist', async () => {
     const res = await request(app.getHttpServer())
       .post('/auth/init-admin')
-      .send({ name: 'AnotherAdmin', password: 'Password123!' });
+      .send({
+        email: 'second@example.com',
+        username: 'AnotherAdmin',
+        password: 'Password123!',
+      });
     expect(res.status).toBeGreaterThanOrEqual(400);
   });
 
   it('login returns JWT token', async () => {
     const res = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ name: 'AdminUser', password: 'Password123!' });
+      .send({ email: 'admin@example.com', password: 'Password123!' });
     expect(res.status).toBe(201); // Created? default for Post without override
     expect(res.body.accessToken).toBeDefined();
     adminToken = res.body.accessToken;
+  });
+
+  it('non-admin user can login (seeded alice) but cannot register new user', async () => {
+    // Seed a normal user directly (since register is admin-only)
+    const bcryptMod = await import('bcrypt');
+    await prisma.user.create({
+      data: {
+        email: 'alice@example.com',
+        username: 'alice',
+        passwordHash: await bcryptMod.hash('Password123!', 12),
+        role: 'USER',
+      },
+    });
+    const res = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: 'alice@example.com', password: 'Password123!' });
+    expect(res.status).toBe(201);
+    userToken = res.body.accessToken;
+    // Attempt registration without admin role
+    const reg = await request(app.getHttpServer())
+      .post('/auth/register')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({
+        email: 'newuser@example.com',
+        username: 'newuser',
+        password: 'Password123!',
+      });
+    expect(reg.status).toBe(403); // Forbidden due to role guard
+  });
+
+  it('register endpoint blocked when unauthenticated', async () => {
+    const res = await request(app.getHttpServer()).post('/auth/register').send({
+      email: 'nouser@example.com',
+      username: 'nouser',
+      password: 'Password123!',
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it('admin can register a new user', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/auth/register')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        email: 'charlie@example.com',
+        username: 'charlie',
+        password: 'Password123!',
+      });
+    expect(res.status).toBe(201);
+    expect(res.body.email).toBe('charlie@example.com');
+    expect(res.body.username).toBe('charlie');
+    expect(res.body.role).toBe('USER');
   });
 
   it('me endpoint returns current user', async () => {
@@ -64,7 +127,8 @@ describe('Auth & Channels (e2e)', () => {
       .get('/auth/me')
       .set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.name).toBe('adminuser');
+    expect(res.body.email).toBe('admin@example.com');
+    expect(res.body.username).toBe('adminuser');
   });
 
   it('admin-check passes with ADMIN role', async () => {

@@ -9,8 +9,8 @@ export class AuthService {
     private users: UserService,
   ) {}
 
-  async login(name: string, password: string) {
-    const user = await this.users.validateUser(name, password);
+  async login(email: string, password: string) {
+    const user = await this.users.validateUserByEmail(email, password);
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const payload = { sub: user.id, role: user.role };
     return {

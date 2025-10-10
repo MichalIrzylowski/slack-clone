@@ -26,13 +26,13 @@ export const useAuth = () => {
 
   const loginMutation = useMutation({
     mutationFn: async ({
-      name,
+      email,
       password,
     }: {
-      name: string;
+      email: string;
       password: string;
     }) => {
-      const data = await loginRequest(name.trim().toLowerCase(), password);
+      const data = await loginRequest(email.trim().toLowerCase(), password);
       setStoredToken(data.accessToken);
       return data.user;
     },
@@ -57,10 +57,10 @@ export const useAuth = () => {
   return {
     user: meQuery.data,
     token,
-    loading: meQuery.isLoading,
+    isLoading: meQuery.isLoading,
     isAuthenticated: !!meQuery.data && !!token,
-    login: (name: string, password: string) =>
-      loginMutation.mutateAsync({ name, password }),
+    login: (email: string, password: string) =>
+      loginMutation.mutateAsync({ email, password }),
     loginStatus: loginMutation.status,
     logout,
   };

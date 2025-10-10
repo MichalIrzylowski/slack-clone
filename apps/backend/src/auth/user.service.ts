@@ -8,7 +8,8 @@ import * as bcrypt from 'bcrypt';
 
 export interface PublicUser {
   id: string;
-  name: string;
+  email: string;
+  username: string;
   role: string;
   createdAt: Date;
   updatedAt: Date;
@@ -22,7 +23,7 @@ export class UserService {
     return this.prisma.user.count();
   }
 
-  async createInitialAdmin(name: string, password: string) {
+  async createInitialAdmin(email: string, password: string, username?: string) {
     const existingCount = await this.countUsers();
     if (existingCount > 0) {
       throw new BadRequestException(
@@ -30,28 +31,63 @@ export class UserService {
       );
     }
     const passwordHash = await bcrypt.hash(password, 12);
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedUsername = (username || normalizedEmail.split('@')[0])
+      .trim()
+      .toLowerCase();
     const user = await this.prisma.user.create({
-      data: { name: name.trim().toLowerCase(), passwordHash, role: 'ADMIN' },
+      data: {
+        email: normalizedEmail,
+        username: normalizedUsername,
+        passwordHash,
+        role: 'ADMIN',
+      },
     });
     return this.toPublic(user);
   }
 
-  async findByName(name: string) {
+  async createUser(email: string, password: string, username?: string) {
+    // Normalize inputs
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedUsername = (username || normalizedEmail.split('@')[0])
+      .trim()
+      .toLowerCase();
+    const passwordHash = await bcrypt.hash(password, 12);
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          email: normalizedEmail,
+          username: normalizedUsername,
+          passwordHash,
+          role: 'USER',
+        },
+      });
+      return this.toPublic(user);
+    } catch (err: any) {
+      // Prisma unique constraint violation
+      if (err?.code === 'P2002') {
+        throw new BadRequestException('Email or username already exists');
+      }
+      throw err;
+    }
+  }
+
+  async findByEmail(email: string) {
     return this.prisma.user.findUnique({
-      where: { name: name.trim().toLowerCase() },
+      where: { email: email.trim().toLowerCase() },
     });
   }
 
-  async validateUser(name: string, password: string) {
-    const user = await this.findByName(name);
+  async validateUserByEmail(email: string, password: string) {
+    const user = await this.findByEmail(email);
     if (!user) return null;
     const valid = await bcrypt.compare(password, user.passwordHash);
     return valid ? user : null;
   }
 
   toPublic(user: any): PublicUser {
-    const { id, name, role, createdAt, updatedAt } = user;
-    return { id, name, role, createdAt, updatedAt };
+    const { id, email, username, role, createdAt, updatedAt } = user;
+    return { id, email, username, role, createdAt, updatedAt };
   }
 
   async getPublicById(id: string) {
