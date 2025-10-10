@@ -30,7 +30,8 @@ export class ChannelService {
     const where: any = { deletedAt: null };
     if (!includeArchived) where.archivedAt = null;
     if (search) {
-      where.name = { contains: search.toLowerCase(), mode: 'insensitive' };
+      // Names are stored normalized (lowercase), so simple contains works case-insensitively
+      where.name = { contains: search.toLowerCase() };
     }
     const items = await this.prisma.channel.findMany({
       where,
@@ -47,11 +48,12 @@ export class ChannelService {
   }
 
   async create(dto: CreateChannelDto) {
-    if (!dto.name) throw new BadRequestException('Name required');
-
+    const raw = dto.name?.trim() || '';
+    if (!raw) throw new BadRequestException('Name required');
+    const normalized = raw.toLowerCase();
     return new ChannelEntity(
       await this.prisma.channel.create({
-        data: { name: dto.name.trim().toLowerCase(), isPrivate: dto.isPrivate },
+        data: { name: normalized, isPrivate: dto.isPrivate ?? false },
       }),
     );
   }

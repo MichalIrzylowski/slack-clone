@@ -1,0 +1,7 @@
+{
+  // Point VS Code Jest extension to backend first
+  "jest.rootPath": "apps/backend",
+  "jest.jestCommand": "npm test --",
+  // Optional: if later you add a jest.config in frontend, you can create a multi-root workspace or switch this setting.
+  // "jest.autoRun": "off" // disable auto-run if performance becomes an issue
+}
