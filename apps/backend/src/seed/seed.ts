@@ -17,6 +17,7 @@ async function seed() {
   // Clear existing channels
   const client = getPrisma();
   await client.channel.deleteMany();
+  await client.user.deleteMany();
 
   // Insert fresh channels
   // Ensure uniqueness manually (Channel.name is unique)
