@@ -8,8 +8,8 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { PlusIcon, HashIcon } from "lucide-react";
+import { HashIcon } from "lucide-react";
+import { ChannelCreateSheet } from "./channel-create-sheet";
 
 interface Channel {
   id: string;
@@ -43,8 +43,10 @@ export const ChannelSection: React.FC<{ currentChannelId?: string }> = ({
         if (!response.ok) {
           throw new Error(`Request failed: ${response.status}`);
         }
-        const data: Channel[] = await response.json();
-        setChannels(data);
+        const raw = await response.json();
+        // Support both legacy array response and new paginated {items,nextCursor}
+        const data: Channel[] = Array.isArray(raw) ? raw : raw.items;
+        setChannels(data || []);
       } catch (err) {
         if ((err as Error).name !== "AbortError") {
           console.error("Error fetching channels:", err);
@@ -58,18 +60,15 @@ export const ChannelSection: React.FC<{ currentChannelId?: string }> = ({
     return () => abort.abort();
   }, []);
 
+  const appendChannel = (ch: Channel) => {
+    setChannels((prev) => [...prev, ch]);
+  };
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="flex items-center justify-between pr-0">
         <span className="uppercase tracking-wide">Channels</span>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="size-6"
-          aria-label="Add channel"
-        >
-          <PlusIcon className="size-4" />
-        </Button>
+        <ChannelCreateSheet onCreated={appendChannel} />
       </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
