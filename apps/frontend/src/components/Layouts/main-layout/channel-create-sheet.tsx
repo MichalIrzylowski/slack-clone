@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusIcon, LockIcon, HashIcon } from "lucide-react";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/auth/useAuth";
 
 export interface CreateChannelValues {
@@ -121,12 +122,9 @@ export const ChannelCreateSheet: React.FC<Props> = ({ onCreated }) => {
         </SheetHeader>
         <form onSubmit={onSubmit} className="flex flex-col gap-4 p-4">
           <div className="space-y-1">
-            <label
-              className="text-sm font-medium flex items-center gap-1"
-              htmlFor="name"
-            >
+            <Label htmlFor="name" className="flex items-center gap-1">
               <HashIcon className="size-4 text-muted-foreground" /> Name
-            </label>
+            </Label>
             <Input
               id="name"
               placeholder="channel-name"
@@ -146,12 +144,12 @@ export const ChannelCreateSheet: React.FC<Props> = ({ onCreated }) => {
               className="size-4 accent-primary"
               {...register("isPrivate")}
             />
-            <label
+            <Label
               htmlFor="isPrivate"
-              className="text-sm flex items-center gap-1 select-none"
+              className="flex items-center gap-1 select-none"
             >
               <LockIcon className="size-4 text-muted-foreground" /> Private
-            </label>
+            </Label>
           </div>
           {isPrivate && (
             <p className="text-xs text-muted-foreground -mt-2">

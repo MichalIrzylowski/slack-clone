@@ -1,4 +1,7 @@
 import React from "react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router";
 import { useAuth } from "@/auth/useAuth";
@@ -41,26 +44,24 @@ export const Login: React.FC = () => {
       <h1 className="text-xl font-semibold text-center">Login</h1>
       <form onSubmit={onSubmit} className="space-y-3">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium" htmlFor="email">
+          <Label htmlFor="email" className="text-xs">
             Email
-          </label>
-          <input
+          </Label>
+          <Input
             id="email"
             type="email"
             autoComplete="email"
-            className="h-9 rounded-md border bg-transparent px-3 text-sm"
             {...register("email")}
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium" htmlFor="password">
+          <Label htmlFor="password" className="text-xs">
             Password
-          </label>
-          <input
+          </Label>
+          <Input
             id="password"
             type="password"
             autoComplete="current-password"
-            className="h-9 rounded-md border bg-transparent px-3 text-sm"
             {...register("password")}
           />
         </div>
@@ -69,13 +70,9 @@ export const Login: React.FC = () => {
             {error}
           </p>
         )}
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="h-9 w-full rounded-md bg-primary text-primary-foreground text-sm font-medium"
-        >
+        <Button type="submit" disabled={isLoading} className="w-full">
           {isLoading ? "Signing in..." : "Sign In"}
-        </button>
+        </Button>
       </form>
       <p className="text-[10px] text-muted-foreground text-center">
         First time? Use init-admin via backend docs to create initial admin.

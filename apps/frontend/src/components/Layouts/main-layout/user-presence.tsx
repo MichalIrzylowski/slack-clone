@@ -1,9 +1,8 @@
 import React from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { MoreVerticalIcon, LogOutIcon } from "lucide-react";
 import { useAuth } from "@/auth/useAuth";
 import { useNavigate } from "react-router";
+import { UserMenu } from "./user-menu.tsx"; // explicit extension to help resolver
 
 export const UserPresence: React.FC = () => {
   const { user, logout } = useAuth();
@@ -27,27 +26,7 @@ export const UserPresence: React.FC = () => {
           ● {user ? "Online" : "Not Auth"}
         </span>
       </div>
-      {user && (
-        <div className="ml-auto flex items-center gap-1">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="size-6"
-            aria-label="Logout"
-            onClick={handleLogout}
-          >
-            <LogOutIcon className="size-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="size-6"
-            aria-label="More"
-          >
-            <MoreVerticalIcon className="size-4" />
-          </Button>
-        </div>
-      )}
+      {user && <UserMenu userRole={user.role} onLogout={handleLogout} />}
     </div>
   );
 };
