@@ -20,8 +20,20 @@ export const useAuth = () => {
 
   const meQuery = useQuery<AuthUser | null>({
     queryKey: ["auth", "me", token],
-    queryFn: async () => (token ? meRequest(token) : null),
+    // Treat auth failures as unauthenticated instead of error-loop
+    queryFn: async () => {
+      if (!token) return null;
+      try {
+        return await meRequest(token);
+      } catch {
+        // Invalid/expired token -> clear and return null
+        setStoredToken(null);
+        return null;
+      }
+    },
     enabled: !!token,
+    retry: false,
+    staleTime: 60_000,
   });
 
   const loginMutation = useMutation({
@@ -57,7 +69,8 @@ export const useAuth = () => {
   return {
     user: meQuery.data,
     token,
-    isLoading: meQuery.isLoading,
+    // Only loading if we actually have a token and are validating it
+    isLoading: !!token && meQuery.isLoading,
     isAuthenticated: !!meQuery.data && !!token,
     login: (email: string, password: string) =>
       loginMutation.mutateAsync({ email, password }),
