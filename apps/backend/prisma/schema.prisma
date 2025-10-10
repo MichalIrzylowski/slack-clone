@@ -23,15 +23,15 @@ model Channel {
   // In future: messages, memberships, workspace relation, etc.
 }
 
-// Future user model placeholder (not enforced yet)
-// model User {
-//   id        String   @id @default(cuid())
-//   email     String   @unique
-//   name      String?
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-//   memberships ChannelMember[]
-// }
+model User {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  passwordHash String
+  role         String   @default("USER") // Values: USER | ADMIN (enforced in service layer)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  // Future: preferences, memberships, etc.
+}
 
 // model ChannelMember {
 //   id         String   @id @default(cuid())

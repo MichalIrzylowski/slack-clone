@@ -9,10 +9,12 @@ import {
   Param,
   Delete,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
 import { ChannelService } from './channel.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('channels')
 export class ChannelController {
@@ -34,6 +36,7 @@ export class ChannelController {
   }
 
   @Post()
+  @UseGuards(AuthGuard('jwt'))
   async create(@Body() dto: CreateChannelDto) {
     try {
       return await this.channelService.create(dto);
