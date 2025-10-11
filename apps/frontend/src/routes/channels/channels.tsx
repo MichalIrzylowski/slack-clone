@@ -1,3 +1,4 @@
+import { RichTextEditor } from "@/components/chat/rich-text-editor";
 import React from "react";
 import { useParams } from "react-router";
 
@@ -11,6 +12,7 @@ export const ChannelPage: React.FC = () => {
       <p className="text-sm text-muted-foreground">
         This is the start of the #{channelId} channel.
       </p>
+      <RichTextEditor />
     </div>
   );
 };
