@@ -6,11 +6,18 @@ import { ChannelService } from './channels/channel.service';
 import { ChannelController } from './channels/channel.controller';
 import { AuthModule } from './auth/auth.module';
 import { UsersController } from './users/users.controller';
+import { UsersService } from './users/users.service';
 import { RolesGuard } from './auth/roles.guard';
 
 @Module({
   imports: [AuthModule],
   controllers: [AppController, ChannelController, UsersController],
-  providers: [AppService, PrismaService, ChannelService, RolesGuard],
+  providers: [
+    AppService,
+    PrismaService,
+    ChannelService,
+    RolesGuard,
+    UsersService,
+  ],
 })
 export class AppModule {}

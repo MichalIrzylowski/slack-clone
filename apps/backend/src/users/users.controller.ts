@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -8,13 +8,27 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
-import { UserService } from '../auth/user.service';
+import { UsersService } from './users.service';
 import { CreateManagedUserDto } from './dto/create-managed-user.dto';
 
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private users: UserService) {}
+  constructor(private users: UsersService) {}
+  @Get()
+  @ApiOperation({ summary: 'Get all users (auth required)' })
+  @ApiResponse({ status: 200, description: 'List of users' })
+  @ApiBearerAuth('jwt-auth')
+  @UseGuards(AuthGuard('jwt'))
+  async findAll() {
+    const users = await this.users.getAllUsers();
+    return users.map((u) => ({
+      id: u.id,
+      name: u.username, // display name mirrors username for now
+      email: u.email,
+      role: u.role,
+    }));
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create a new user (ADMIN only)' })
@@ -30,10 +44,9 @@ export class UsersController {
       role,
       dto.name,
     );
-    // Frontend expects { id, name, email, role }
     return {
       id: created.id,
-      name: dto.name || created.username, // name not persisted yet
+      name: dto.name || created.username,
       email: created.email,
       role: created.role,
     };

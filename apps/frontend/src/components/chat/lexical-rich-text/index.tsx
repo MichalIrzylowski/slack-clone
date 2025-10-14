@@ -7,11 +7,20 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { CONFIG } from "./config";
 import { Toolbar } from "./toolbar";
 import { EmojiPlugin } from "./plugins/emoji-plugin";
+import { MentionsPlugin } from "./plugins/mentions-plugin";
+import { useRef } from "react";
+import { useGetUsers } from "@/api/users";
 
 export const LexicalRichText = () => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const users = useGetUsers();
+
   return (
     <LexicalComposer initialConfig={CONFIG}>
-      <div className="bg-gray-100/50 p-2 rounded-md border border-gray-300">
+      <div
+        ref={wrapperRef}
+        className="bg-gray-100/50 p-2 rounded-md border border-gray-300"
+      >
         <Toolbar />
         <div className="relative">
           <RichTextPlugin
@@ -31,6 +40,9 @@ export const LexicalRichText = () => {
         <HistoryPlugin />
         <AutoFocusPlugin />
         <EmojiPlugin />
+        {users.data && (
+          <MentionsPlugin wrapperRef={wrapperRef} options={users?.data} />
+        )}
       </div>
     </LexicalComposer>
   );
