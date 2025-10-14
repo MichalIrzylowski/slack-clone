@@ -16,7 +16,7 @@ export const ToggleWithTooltip = ({
 }: ToggleWithTooltipProps) => {
   return (
     <Tooltip {...tooltipProps}>
-      <TooltipTrigger {...tooltipTriggerProps}>
+      <TooltipTrigger asChild {...tooltipTriggerProps}>
         <Toggle {...toggleProps} />
       </TooltipTrigger>
       <TooltipContent>{tooltipContent}</TooltipContent>
