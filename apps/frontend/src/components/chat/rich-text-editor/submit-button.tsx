@@ -4,7 +4,6 @@ import { useEditor } from "./editor-system";
 
 export const SubmitButton = () => {
   const editor = useEditor();
-  console.log(editor);
   return (
     <Button
       size="icon"

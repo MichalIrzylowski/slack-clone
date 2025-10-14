@@ -8,6 +8,7 @@ import {
   strikethroughExtension,
   underlineExtension,
 } from "@lexkit/editor";
+import { MentionExtension } from "./extensions/mention-extension";
 
 export const extensions = [
   boldExtension,
@@ -17,6 +18,7 @@ export const extensions = [
   codeExtension,
   linkExtension,
   blockFormatExtension,
+  MentionExtension,
 ] as const;
 
 export const { Provider, useEditor } = createEditorSystem<typeof extensions>();

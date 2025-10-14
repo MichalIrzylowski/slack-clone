@@ -7,6 +7,14 @@
         "shadcn@latest",
         "mcp"
       ]
+    },
+    "sqlite": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sqlite",
+        "sqlite:///ścieżka/do/pliku.db"
+      ]
     }
   }
 }
