@@ -1,5 +1,4 @@
-// import { LexicalRichTextEditor } from "@/components/chat/lexical-rich-text-editor";
-import { RichTextEditor } from "@/components/chat/rich-text-editor";
+import { LexicalRichText } from "@/components/chat/lexical-rich-text";
 import React from "react";
 import { useParams } from "react-router";
 
@@ -13,8 +12,7 @@ export const ChannelPage: React.FC = () => {
       <p className="text-sm text-muted-foreground">
         This is the start of the #{channelId} channel.
       </p>
-      <RichTextEditor />
-      {/* <LexicalRichTextEditor /> */}
+      <LexicalRichText />
     </div>
   );
 };
