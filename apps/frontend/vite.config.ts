@@ -9,6 +9,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@emoji-datasource-facebook": path.resolve(
+        __dirname,
+        "../../node_modules/emoji-datasource-facebook/img/facebook/64/"
+      ),
     },
   },
 });
