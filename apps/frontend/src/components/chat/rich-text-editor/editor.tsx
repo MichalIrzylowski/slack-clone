@@ -1,6 +1,7 @@
 import { RichText } from "@lexkit/editor";
 import { Toolbar } from "./toolbar";
 import { SubmitButton } from "./submit-button";
+import { MentionDropdown } from "./mention-dropdown";
 
 export const Editor = () => {
   return (
