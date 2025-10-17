@@ -75,7 +75,8 @@ export class MentionNode extends TextNode {
     const dom = super.createDOM(config);
 
     dom.style.cssText = mentionStyle;
-    dom.className = "mention";
+    dom.className =
+      "inline-flex items-center gap-1 rounded-sm bg-accent/60 dark:bg-accent/40 text-accent-foreground px-1.5 py-0.5 font-medium leading-none transition-colors ";
     dom.spellcheck = false;
 
     return dom;

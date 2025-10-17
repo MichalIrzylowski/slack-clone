@@ -90,27 +90,31 @@ export function MentionsMenu<
   }, [recalculateStyles]);
 
   return (
-    <div ref={menuRef} style={style}>
-      {options.length === 0 && (
-        <div className="px-3 py-1 text-gray-500">No matches</div>
-      )}
-      {options.map((option, i) => (
-        <div
-          key={option.key}
-          onMouseEnter={() => setHighlightedIndex(i)}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            onSelect(option);
-          }}
-          className={`px-3 py-1 cursor-pointer ${
-            i === selectedIndex
-              ? "bg-indigo-600 text-white"
-              : "hover:bg-gray-100"
-          }`}
-        >
-          @{option.name}
-        </div>
-      ))}
+    <div
+      className="bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-hidden rounded-md border p-1 shadow-lg"
+      ref={menuRef}
+      style={style}
+    >
+      {options.map((option, i) => {
+        const active = i === selectedIndex;
+        return (
+          <div
+            role="option"
+            aria-selected={active}
+            key={option.key}
+            onMouseEnter={() => setHighlightedIndex(i)}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              onSelect(option);
+            }}
+            className={`flex items-center gap-2 rounded-sm px-3 py-1.5 cursor-pointer select-none
+              ${active ? "bg-accent text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"}
+              transition-colors`}
+          >
+            @{option.name}
+          </div>
+        );
+      })}
     </div>
   );
 }

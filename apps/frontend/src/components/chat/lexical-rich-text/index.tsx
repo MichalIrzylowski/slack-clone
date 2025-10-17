@@ -10,6 +10,7 @@ import { EmojiPlugin } from "./plugins/emoji-plugin";
 import { MentionsPlugin } from "./plugins/mentions-plugin";
 import { useRef } from "react";
 import { useGetUsers } from "@/api/users";
+import { Submit } from "./submit";
 
 export const LexicalRichText = () => {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -44,6 +45,7 @@ export const LexicalRichText = () => {
           <MentionsPlugin wrapperRef={wrapperRef} options={users?.data} />
         )}
       </div>
+      <Submit />
     </LexicalComposer>
   );
 };

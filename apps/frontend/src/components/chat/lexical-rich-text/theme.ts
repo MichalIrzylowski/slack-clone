@@ -7,5 +7,5 @@ export const theme: EditorThemeClasses = {
     underline: "underline",
     strikethrough: "line-through",
   },
-  root: "min-h-100 border p-2 rounded-md",
+  root: "min-h-10 border p-2 rounded-md",
 };
