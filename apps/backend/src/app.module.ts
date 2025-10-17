@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { UsersController } from './users/users.controller';
 import { UsersService } from './users/users.service';
 import { RolesGuard } from './auth/roles.guard';
+import { ChatGateway } from './websocket/chat.gateway';
+import { WsJwtGuard } from './websocket/ws-jwt.guard';
 
 @Module({
   imports: [AuthModule],
@@ -18,6 +20,8 @@ import { RolesGuard } from './auth/roles.guard';
     ChannelService,
     RolesGuard,
     UsersService,
+    ChatGateway,
+    WsJwtGuard,
   ],
 })
 export class AppModule {}
