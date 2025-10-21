@@ -1,9 +1,11 @@
 import React from "react";
 import { SidebarHeader, SidebarTrigger } from "@/components/ui/sidebar";
-import { Input } from "@/components/ui/input";
 import { ChevronDownIcon } from "lucide-react";
+import { Combobox } from "@/components/combobox";
+import { useGetChannels } from "@/api/channels";
 
 export const WorkspaceHeader: React.FC = () => {
+  const channels = useGetChannels();
   return (
     <SidebarHeader>
       <div className="flex items-center gap-2 px-2">
@@ -17,7 +19,14 @@ export const WorkspaceHeader: React.FC = () => {
         </div>
       </div>
       <div className="px-2 pt-1">
-        <Input placeholder="Search" className="h-8 text-xs" />
+        <Combobox
+          triggerChild="Search"
+          options={channels.data?.map((channel) => ({
+            value: channel.id,
+            label: channel.name,
+          }))}
+          onSelect={console.log}
+        />
       </div>
     </SidebarHeader>
   );
