@@ -22,6 +22,7 @@ export const ChannelSection: React.FC<{ currentChannelId?: string }> = ({
     isLoading: isLoadingMy,
     error: errorMy,
   } = useGetMyChannels();
+  // Removed global all-channels listing; now join handled via workspace header combobox.
 
   return (
     <>

@@ -56,3 +56,30 @@ export const usePostChannel = () => {
 
   return mutation;
 };
+
+export const useJoinChannel = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationKey: ["join-channel"],
+    mutationFn: async (channelId: string) => {
+      const response = await api.channels.channelControllerJoin(channelId);
+      if (!response.data) {
+        throw new Error("Failed to join channel");
+      }
+      return response.data; // ChannelMembershipResponseDto
+    },
+    onSuccess: (membership) => {
+      // Optimistically add channel to my-channels if present in all channels
+      qc.setQueryData<ChannelResponseDto[] | undefined>(
+        ["my-channels"],
+        (prev) => {
+          if (!prev) return prev;
+          if (prev.some((c) => c.id === membership.channelId)) return prev;
+          const all = qc.getQueryData<ChannelResponseDto[]>(["channels"]);
+          const toAdd = all?.find((c) => c.id === membership.channelId);
+          return toAdd ? [...prev, toAdd] : prev;
+        }
+      );
+    },
+  });
+};
