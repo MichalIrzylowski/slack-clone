@@ -1,9 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./client";
-import type {
-  ChannelListResponseDto,
-  CreateChannelDto,
-} from "./__generated__/Api";
+import type { ChannelResponseDto, CreateChannelDto } from "./__generated__/Api";
 
 export const useGetChannels = () => {
   return useQuery({
@@ -32,11 +29,8 @@ export const usePostChannel = () => {
     mutationFn: (channel: CreateChannelDto) =>
       api.channels.channelControllerCreate(channel),
     onSuccess: (newChannel) => {
-      qc.setQueryData(["channels"], (oldData: ChannelListResponseDto) => {
-        return {
-          ...oldData,
-          items: [...oldData.items, newChannel.data],
-        };
+      qc.setQueryData(["channels"], (oldData: ChannelResponseDto[]) => {
+        return [...oldData, newChannel.data];
       });
     },
   });

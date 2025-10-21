@@ -47,7 +47,7 @@ export const ChannelSection: React.FC<{ currentChannelId?: string }> = ({
           )}
           {!isLoading &&
             !error &&
-            data?.items.map((channel) => (
+            data?.map((channel) => (
               <SidebarMenuItem key={channel.id}>
                 <SidebarMenuButton
                   asChild
