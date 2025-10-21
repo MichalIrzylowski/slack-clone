@@ -18,6 +18,8 @@ describe('ChannelService.create', () => {
 
   beforeEach(async () => {
     await prisma.channel.deleteMany();
+    await prisma.channelMembership.deleteMany();
+    await prisma.user.deleteMany();
   });
 
   afterAll(async () => {
@@ -118,5 +120,47 @@ describe('ChannelService.create', () => {
     // ensure originals remain
     const list = await service.list();
     expect(list.map((i) => i.name).sort()).toEqual(['alpha', 'beta']);
+  });
+
+  describe('join', () => {
+    let userId: string;
+    beforeEach(async () => {
+      // create a user directly via prisma
+      const u = await prisma.user.create({
+        data: {
+          email: 'alice@example.com',
+          username: 'alice',
+          passwordHash: 'hash',
+          role: 'USER',
+        },
+      });
+      userId = u.id;
+    });
+
+    it('joins a channel successfully', async () => {
+      const c = await service.create({ name: 'general', isPrivate: false });
+      const membership = await service.join(c.id, userId);
+      expect(membership.channelId).toBe(c.id);
+      expect(membership.userId).toBe(userId);
+      expect(membership.role).toBe('MEMBER');
+      // second join should fail
+      await expect(service.join(c.id, userId)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('rejects joining archived channel', async () => {
+      const c = await service.create({ name: 'archived', isPrivate: false });
+      await service.update(c.id, { archived: true });
+      await expect(service.join(c.id, userId)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('rejects joining non-existent channel', async () => {
+      await expect(service.join('non-existent', userId)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
   });
 });

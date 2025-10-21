@@ -10,6 +10,7 @@ import {
   Delete,
   HttpCode,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -27,6 +28,8 @@ import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ChannelResponseDto } from './dto/channel-response.dto';
+import { ChannelMembershipResponseDto } from './dto/channel-membership-response.dto';
+import { Request } from 'express';
 
 @ApiTags('channels')
 @Controller('channels')
@@ -92,5 +95,23 @@ export class ChannelController {
   @ApiNotFoundResponse({ description: 'Channel not found' })
   async remove(@Param('id') id: string) {
     await this.channelService.remove(id);
+  }
+
+  @Post(':id/join')
+  @ApiBearerAuth('jwt-auth')
+  @ApiOperation({ summary: 'Join a channel' })
+  @ApiOkResponse({
+    description: 'Membership created',
+    type: ChannelMembershipResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Already a member or archived channel',
+  })
+  @ApiNotFoundResponse({ description: 'Channel not found' })
+  @UseGuards(AuthGuard('jwt'))
+  async join(@Param('id') id: string, @Req() req: Request) {
+    const userId = (req as any)?.user?.userId;
+    if (!userId) throw new BadRequestException('Missing authenticated user');
+    return this.channelService.join(id, userId);
   }
 }

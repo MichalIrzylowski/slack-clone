@@ -71,4 +71,46 @@ export class ChannelService {
       }),
     );
   }
+
+  /**
+   * Join a channel by id for the given user.
+   * - Validates channel exists and is not deleted/archived (allow archived join? For now disallow)
+   * - Prevents duplicate membership (Prisma unique constraint or manual check)
+   * - Private channels: future enhancement to require invite; currently treated same as public
+   */
+  async join(channelId: string, userId: string) {
+    const channel = await this.prisma.channel.findUnique({
+      where: { id: channelId },
+    });
+    if (!channel || channel.deletedAt) {
+      throw new NotFoundException('Channel not found');
+    }
+    if (channel.archivedAt) {
+      throw new BadRequestException('Cannot join an archived channel');
+    }
+    // Check existing membership first to return consistent error
+    const existing = await this.prisma.channelMembership.findUnique({
+      where: { channelId_userId: { channelId, userId } },
+    });
+    if (existing) {
+      throw new BadRequestException('Already a member');
+    }
+    try {
+      const membership = await this.prisma.channelMembership.create({
+        data: {
+          channelId,
+          userId,
+          role: 'MEMBER',
+        },
+      });
+      // Return raw membership entity (no wrapper class yet)
+      return membership;
+    } catch (e: any) {
+      if (e?.code === 'P2002') {
+        // Unique constraint race condition
+        throw new BadRequestException('Already a member');
+      }
+      throw e;
+    }
+  }
 }
