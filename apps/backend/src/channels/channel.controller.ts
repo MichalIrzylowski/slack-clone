@@ -26,10 +26,7 @@ import { ChannelService } from './channel.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
 import { AuthGuard } from '@nestjs/passport';
-import {
-  ChannelListResponseDto,
-  ChannelResponseDto,
-} from './dto/channel-response.dto';
+import { ChannelResponseDto } from './dto/channel-response.dto';
 
 @ApiTags('channels')
 @Controller('channels')
@@ -37,24 +34,16 @@ export class ChannelController {
   constructor(private readonly channelService: ChannelService) {}
 
   @Get()
-  @ApiOperation({
-    summary: 'List channels with optional search and pagination',
-  })
+  @ApiOperation({ summary: 'List channels (no pagination)' })
   @ApiQuery({ name: 'search', required: false })
-  @ApiQuery({ name: 'limit', required: false })
-  @ApiQuery({ name: 'cursor', required: false })
   @ApiQuery({ name: 'includeArchived', required: false })
-  @ApiOkResponse({ type: ChannelListResponseDto })
+  @ApiOkResponse({ type: [ChannelResponseDto] })
   async list(
     @Query('search') search?: string,
-    @Query('limit') limit?: string,
-    @Query('cursor') cursor?: string,
     @Query('includeArchived') includeArchived?: string,
   ) {
     return this.channelService.list({
       search,
-      limit: limit ? parseInt(limit, 10) : undefined,
-      cursor: cursor || undefined,
       includeArchived: includeArchived === 'true',
     });
   }

@@ -47,18 +47,11 @@ describe('ChannelService.create', () => {
     ).rejects.toHaveProperty('code', 'P2002');
   });
 
-  it('paginates results and returns nextCursor', async () => {
+  it('lists all results (no pagination)', async () => {
     const names = ['general', 'random', 'design'];
     for (const n of names) await service.create({ name: n, isPrivate: false });
-    const first = await service.list({ limit: 2 });
-    expect(first.items).toHaveLength(2);
-    expect(first.nextCursor).toBeTruthy();
-    const second = await service.list({
-      cursor: first.nextCursor || undefined,
-      limit: 2,
-    });
-    expect(second.items).toHaveLength(1);
-    expect(second.nextCursor).toBeNull();
+    const list = await service.list();
+    expect(list.map((c) => c.name)).toEqual(names);
   });
 
   it('filters by search (case-insensitive)', async () => {
@@ -66,9 +59,9 @@ describe('ChannelService.create', () => {
     await service.create({ name: 'design', isPrivate: false });
     await service.create({ name: 'engineering', isPrivate: false });
     const res = await service.list({ search: 'DES' });
-    expect(res.items.map((i) => i.name)).toEqual(['design']);
+    expect(res.map((i) => i.name)).toEqual(['design']);
     const res2 = await service.list({ search: 'eng' });
-    expect(res2.items.map((i) => i.name)).toEqual(['engineering']);
+    expect(res2.map((i) => i.name)).toEqual(['engineering']);
   });
 
   it('updates channel name and normalizes', async () => {
@@ -95,9 +88,9 @@ describe('ChannelService.create', () => {
     const archived = await service.update(c.id, { archived: true });
     expect(archived.archivedAt).toBeInstanceOf(Date);
     const listDefault = await service.list();
-    expect(listDefault.items.find((i) => i.id === c.id)).toBeUndefined();
+    expect(listDefault.find((i) => i.id === c.id)).toBeUndefined();
     const listInclude = await service.list({ includeArchived: true });
-    expect(listInclude.items.find((i) => i.id === c.id)).toBeDefined();
+    expect(listInclude.find((i) => i.id === c.id)).toBeDefined();
   });
 
   it('soft deletes channel and excludes from list', async () => {
@@ -105,7 +98,7 @@ describe('ChannelService.create', () => {
     const removed = await service.remove(c.id);
     expect(removed.deletedAt).toBeInstanceOf(Date);
     const list = await service.list();
-    expect(list.items.find((i) => i.id === c.id)).toBeUndefined();
+    expect(list.find((i) => i.id === c.id)).toBeUndefined();
   });
 
   it('throws NotFoundException when removing already deleted channel', async () => {
@@ -124,6 +117,6 @@ describe('ChannelService.create', () => {
     ).rejects.toHaveProperty('code', 'P2002');
     // ensure originals remain
     const list = await service.list();
-    expect(list.items.map((i) => i.name).sort()).toEqual(['alpha', 'beta']);
+    expect(list.map((i) => i.name).sort()).toEqual(['alpha', 'beta']);
   });
 });

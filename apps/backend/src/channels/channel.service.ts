@@ -14,19 +14,8 @@ export class ChannelService {
   private readonly logger = new Logger(ChannelService.name);
   constructor(private prisma: PrismaService) {}
 
-  async list(params?: {
-    search?: string;
-    limit?: number;
-    cursor?: string;
-    includeArchived?: boolean;
-  }) {
-    const {
-      search,
-      limit = 50,
-      cursor,
-      includeArchived = false,
-    } = params || {};
-    const take = Math.min(Math.max(limit, 1), 100);
+  async list(params?: { search?: string; includeArchived?: boolean }) {
+    const { search, includeArchived = false } = params || {};
     const where: any = { deletedAt: null };
     if (!includeArchived) where.archivedAt = null;
     if (search) {
@@ -36,15 +25,8 @@ export class ChannelService {
     const items = await this.prisma.channel.findMany({
       where,
       orderBy: { createdAt: 'asc' },
-      take: take + 1,
-      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
     });
-    const hasMore = items.length > take;
-    if (hasMore) items.pop();
-    return {
-      items: items.map((c) => new ChannelEntity(c)),
-      nextCursor: hasMore ? items[items.length - 1]?.id : null,
-    };
+    return items.map((c) => new ChannelEntity(c));
   }
 
   async create(dto: CreateChannelDto) {

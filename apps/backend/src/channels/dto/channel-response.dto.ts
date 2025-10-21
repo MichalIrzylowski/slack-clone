@@ -29,10 +29,3 @@ export class ChannelResponseDto
   @ApiProperty()
   updatedAt!: Date;
 }
-
-export class ChannelListResponseDto {
-  @ApiProperty({ type: [ChannelResponseDto] })
-  items!: ChannelResponseDto[];
-  @ApiProperty({ description: 'Cursor for next page or null', nullable: true })
-  nextCursor!: string | null;
-}
