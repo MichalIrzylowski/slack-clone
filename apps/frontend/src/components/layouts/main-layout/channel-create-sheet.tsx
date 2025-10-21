@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
   Sheet,
@@ -15,30 +15,21 @@ import { Input } from "@/components/ui/input";
 import { PlusIcon, LockIcon, HashIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/auth/useAuth";
+import { usePostChannel } from "@/api/channels";
 
 export interface CreateChannelValues {
   name: string;
   isPrivate: boolean;
 }
 
-interface Props {
-  onCreated?: (channel: {
-    id: string;
-    name: string;
-    isPrivate: boolean;
-  }) => void;
-}
-
-export const ChannelCreateSheet: React.FC<Props> = ({ onCreated }) => {
+export const ChannelCreateSheet = () => {
+  const postChannel = usePostChannel();
   const [open, setOpen] = React.useState(false);
-  const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const { token, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
     watch,
   } = useForm<CreateChannelValues>({
     defaultValues: { name: "", isPrivate: false },
@@ -47,58 +38,20 @@ export const ChannelCreateSheet: React.FC<Props> = ({ onCreated }) => {
   const isPrivate = watch("isPrivate");
 
   const onSubmit = handleSubmit(async (values) => {
-    // Basic validation
-    if (!values.name.trim()) {
-      setError("Name is required");
-      return;
-    }
-    if (!/^[a-z0-9-_]+$/i.test(values.name)) {
-      setError("Only letters, numbers, dash, underscore");
-      return;
-    }
-    if (values.name.length > 50) {
-      setError("Max 50 chars");
-      return;
-    }
-    try {
-      setSubmitting(true);
-      setError(null);
-      const base = import.meta.env.VITE_BACKEND_URL;
-      if (!base) throw new Error("VITE_BACKEND_URL not set");
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (token) headers.Authorization = `Bearer ${token}`;
-      const res = await fetch(`${base}/channels`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(values),
-      });
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt || `Failed (${res.status})`);
-      }
-      const channel = await res.json();
-      onCreated?.(channel);
-      reset();
-      setOpen(false);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Unknown error";
-      setError(msg);
-    } finally {
-      setSubmitting(false);
-    }
+    postChannel.mutate(values);
   });
+
+  useEffect(() => {
+    if (postChannel.isSuccess) {
+      setOpen(false);
+    }
+  }, [postChannel.isSuccess]);
 
   return (
     <Sheet
       open={open}
       onOpenChange={(o) => {
         setOpen(o);
-        if (!o) {
-          setError(null);
-          reset();
-        }
       }}
     >
       <SheetTrigger asChild>
@@ -156,19 +109,23 @@ export const ChannelCreateSheet: React.FC<Props> = ({ onCreated }) => {
               Only invited members can view or join this channel.
             </p>
           )}
-          {error && (
+          {postChannel.error && (
             <p className="text-xs text-destructive" role="alert">
-              {error}
+              {postChannel.error.message}
             </p>
           )}
           <div className="flex gap-2 pt-2">
             <SheetClose asChild>
-              <Button type="button" variant="outline" disabled={submitting}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={postChannel.isPending}
+              >
                 Cancel
               </Button>
             </SheetClose>
-            <Button type="submit" disabled={submitting}>
-              {submitting ? "Creating..." : "Create"}
+            <Button type="submit" disabled={postChannel.isPending}>
+              {postChannel.isPending ? "Creating..." : "Create"}
             </Button>
           </div>
         </form>

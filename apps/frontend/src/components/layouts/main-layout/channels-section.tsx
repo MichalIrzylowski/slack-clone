@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link, useParams } from "react-router";
 import {
   SidebarGroup,
@@ -10,73 +10,24 @@ import {
 } from "@/components/ui/sidebar";
 import { HashIcon } from "lucide-react";
 import { ChannelCreateSheet } from "./channel-create-sheet";
-import { useAuth } from "@/auth/useAuth";
-
-interface Channel {
-  id: string;
-  name: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { useGetChannels } from "@/api/channels";
 
 export const ChannelSection: React.FC<{ currentChannelId?: string }> = ({
   currentChannelId,
 }) => {
-  const { token } = useAuth();
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { channelId: routeChannelId } = useParams();
   const activeChannelId = currentChannelId || routeChannelId;
-
-  useEffect(() => {
-    const abort = new AbortController();
-    const fetchChannels = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const base = import.meta.env.VITE_BACKEND_URL;
-        if (!base) {
-          throw new Error("VITE_BACKEND_URL is not defined");
-        }
-        const headers: Record<string, string> = {};
-        if (token) headers.Authorization = `Bearer ${token}`;
-        const response = await fetch(`${base}/channels`, {
-          signal: abort.signal,
-          headers,
-        });
-        if (!response.ok) {
-          throw new Error(`Request failed: ${response.status}`);
-        }
-        const raw = await response.json();
-        const data: Channel[] = Array.isArray(raw) ? raw : raw.items;
-        setChannels(data || []);
-      } catch (err) {
-        if ((err as Error).name !== "AbortError") {
-          console.error("Error fetching channels:", err);
-          setError((err as Error).message);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchChannels();
-    return () => abort.abort();
-  }, [token]);
-
-  const appendChannel = (ch: Channel) => {
-    setChannels((prev) => [...prev, ch]);
-  };
+  const { data, isLoading, error } = useGetChannels();
 
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="flex items-center justify-between pr-0">
         <span className="uppercase tracking-wide">Channels</span>
-        <ChannelCreateSheet onCreated={appendChannel} />
+        <ChannelCreateSheet />
       </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {loading && (
+          {isLoading && (
             <SidebarMenuItem>
               <SidebarMenuButton disabled>
                 <span className="text-muted-foreground">
@@ -85,16 +36,18 @@ export const ChannelSection: React.FC<{ currentChannelId?: string }> = ({
               </SidebarMenuButton>
             </SidebarMenuItem>
           )}
-          {!loading && error && (
+          {!isLoading && error && (
             <SidebarMenuItem>
               <SidebarMenuButton variant="outline">
-                <span className="text-destructive">Failed: {error}</span>
+                <span className="text-destructive">
+                  Failed: {error.message}
+                </span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           )}
-          {!loading &&
+          {!isLoading &&
             !error &&
-            channels.map((channel) => (
+            data?.items.map((channel) => (
               <SidebarMenuItem key={channel.id}>
                 <SidebarMenuButton
                   asChild

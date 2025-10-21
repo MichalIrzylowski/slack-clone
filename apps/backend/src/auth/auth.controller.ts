@@ -28,11 +28,6 @@ export class AuthController {
     private users: UserService,
   ) {}
 
-  @Post('init-admin')
-  @ApiOperation({
-    summary: 'Initialize the first admin user (only when no users exist)',
-  })
-  @ApiResponse({ status: 201, description: 'Admin user created' })
   async initAdmin(@Body() dto: CreateUserDto) {
     return this.users.createInitialAdmin(dto.email, dto.password, dto.username);
   }
