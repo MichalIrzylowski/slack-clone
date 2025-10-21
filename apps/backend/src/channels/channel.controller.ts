@@ -114,4 +114,15 @@ export class ChannelController {
     if (!userId) throw new BadRequestException('Missing authenticated user');
     return this.channelService.join(id, userId);
   }
+
+  @Get('mine')
+  @ApiBearerAuth('jwt-auth')
+  @ApiOperation({ summary: 'List channels current user is a member of' })
+  @ApiOkResponse({ type: [ChannelResponseDto] })
+  @UseGuards(AuthGuard('jwt'))
+  async myChannels(@Req() req: Request) {
+    const userId = (req as any)?.user?.userId;
+    if (!userId) throw new BadRequestException('Missing authenticated user');
+    return this.channelService.listForUser(userId);
+  }
 }

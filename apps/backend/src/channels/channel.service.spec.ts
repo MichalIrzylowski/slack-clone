@@ -163,4 +163,64 @@ describe('ChannelService.create', () => {
       );
     });
   });
+
+  describe('listForUser', () => {
+    let userA: string;
+    let userB: string;
+    beforeEach(async () => {
+      const a = await prisma.user.create({
+        data: {
+          email: 'a@example.com',
+          username: 'usera',
+          passwordHash: 'hash',
+          role: 'USER',
+        },
+      });
+      const b = await prisma.user.create({
+        data: {
+          email: 'b@example.com',
+          username: 'userb',
+          passwordHash: 'hash',
+          role: 'USER',
+        },
+      });
+      userA = a.id;
+      userB = b.id;
+    });
+
+    it('returns only channels user is member of', async () => {
+      const general = await service.create({
+        name: 'general',
+        isPrivate: false,
+      });
+      const random = await service.create({
+        name: 'random',
+        isPrivate: false,
+      });
+      const design = await service.create({
+        name: 'design',
+        isPrivate: false,
+      });
+      await service.join(general.id, userA);
+      await service.join(random.id, userA);
+      await service.join(design.id, userB);
+      const aChannels = await service.listForUser(userA);
+      expect(aChannels.map((c) => c.name).sort()).toEqual([
+        'general',
+        'random',
+      ]);
+      const bChannels = await service.listForUser(userB);
+      expect(bChannels.map((c) => c.name)).toEqual(['design']);
+    });
+
+    it('excludes archived channels from listForUser', async () => {
+      const c1 = await service.create({ name: 'keep', isPrivate: false });
+      const c2 = await service.create({ name: 'archive', isPrivate: false });
+      await service.join(c1.id, userA);
+      await service.join(c2.id, userA);
+      await service.update(c2.id, { archived: true });
+      const list = await service.listForUser(userA);
+      expect(list.map((c) => c.name)).toEqual(['keep']);
+    });
+  });
 });

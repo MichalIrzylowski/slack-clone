@@ -29,6 +29,18 @@ export class ChannelService {
     return items.map((c) => new ChannelEntity(c));
   }
 
+  async listForUser(userId: string) {
+    // Return channels the user is a member of (excluding deleted or archived for now)
+    const memberships = await this.prisma.channelMembership.findMany({
+      where: { userId },
+      include: { channel: true },
+      orderBy: { joinedAt: 'asc' },
+    });
+    return memberships
+      .filter((m) => !m.channel.deletedAt && !m.channel.archivedAt)
+      .map((m) => new ChannelEntity(m.channel));
+  }
+
   async create(dto: CreateChannelDto) {
     const raw = dto.name?.trim() || '';
     if (!raw) throw new BadRequestException('Name required');

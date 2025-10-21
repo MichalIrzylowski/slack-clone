@@ -21,6 +21,25 @@ export const useGetChannels = () => {
   });
 };
 
+export const useGetMyChannels = () => {
+  return useQuery({
+    queryKey: ["my-channels"],
+    queryFn: async () => {
+      const response = await api.channels.channelControllerMyChannels();
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      if (!response.data) {
+        throw new Error("No data received");
+      }
+
+      return response.data;
+    },
+  });
+};
+
 export const usePostChannel = () => {
   const qc = useQueryClient();
 
