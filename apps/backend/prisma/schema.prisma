@@ -1,13 +1,27 @@
-// Prisma schema for backend chat application
-// SQLite for development
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum ChannelMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum NotificationLevel {
+  ALL
+  MENTIONS
+  NONE
 }
 
 model Channel {
@@ -28,28 +42,24 @@ model User {
   email        String              @unique
   username     String              @unique
   passwordHash String
-  role         String              @default("USER") // Values: USER | ADMIN (enforced in service layer)
+  role         UserRole            @default(USER)
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
   memberships  ChannelMembership[]
-  // Future: preferences, etc.
 }
 
-// NOTE: SQLite provider does not support native enums; using String fields with constrained values.
-// channelMemberRole values: OWNER | ADMIN | MEMBER
-// notificationLevel values: ALL | MENTIONS | NONE
 model ChannelMembership {
-  id                 String    @id @default(cuid())
+  id                 String            @id @default(cuid())
   channelId          String
   userId             String
-  role               String    @default("MEMBER") // OWNER | ADMIN | MEMBER
-  joinedAt           DateTime  @default(now())
+  role               ChannelMemberRole @default(MEMBER)
+  joinedAt           DateTime          @default(now())
   lastReadAt         DateTime?
-  isMuted            Boolean   @default(false)
-  isStarred          Boolean   @default(false)
-  notificationsLevel String    @default("ALL") // ALL | MENTIONS | NONE
-  channel            Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isMuted            Boolean           @default(false)
+  isStarred          Boolean           @default(false)
+  notificationsLevel NotificationLevel @default(ALL)
+  channel            Channel           @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([channelId, userId])
   @@index([userId])

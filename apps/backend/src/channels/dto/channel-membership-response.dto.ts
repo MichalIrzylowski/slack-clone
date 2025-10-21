@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ChannelMemberRole, NotificationLevel } from '@prisma/client';
 import { ChannelMembershipEntity } from '../entities/channel-membership.entity';
 
 export class ChannelMembershipResponseDto
@@ -22,8 +23,8 @@ export class ChannelMembershipResponseDto
   channelId!: string;
   @ApiProperty()
   userId!: string;
-  @ApiProperty()
-  role!: string;
+  @ApiProperty({ enum: ChannelMemberRole })
+  role!: ChannelMemberRole;
   @ApiProperty()
   joinedAt!: Date;
   @ApiProperty({ nullable: true })
@@ -32,6 +33,6 @@ export class ChannelMembershipResponseDto
   isMuted!: boolean;
   @ApiProperty()
   isStarred!: boolean;
-  @ApiProperty()
-  notificationsLevel!: string;
+  @ApiProperty({ enum: NotificationLevel })
+  notificationsLevel!: NotificationLevel;
 }

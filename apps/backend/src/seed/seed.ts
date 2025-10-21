@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 let prisma: PrismaClient | null = null;
@@ -33,19 +33,19 @@ async function seed() {
       email: 'admin@example.com',
       username: 'admin',
       passwordHash: await hash('Password123!'),
-      role: 'ADMIN',
+      role: UserRole.ADMIN,
     },
     {
       email: 'alice@example.com',
       username: 'alice',
       passwordHash: await hash('Password123!'),
-      role: 'USER',
+      role: UserRole.USER,
     },
     {
       email: 'bob@example.com',
       username: 'bob',
       passwordHash: await hash('Password123!'),
-      role: 'USER',
+      role: UserRole.USER,
     },
   ];
   for (const u of usersToCreate) {

@@ -1,4 +1,8 @@
-import { ChannelMembership } from '@prisma/client';
+import {
+  ChannelMembership,
+  ChannelMemberRole,
+  NotificationLevel,
+} from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ChannelMembershipEntity implements ChannelMembership {
@@ -8,8 +12,8 @@ export class ChannelMembershipEntity implements ChannelMembership {
   channelId: string;
   @ApiProperty({ description: 'User id of the member' })
   userId: string;
-  @ApiProperty({ description: 'Role in the channel (OWNER | ADMIN | MEMBER)' })
-  role: string;
+  @ApiProperty({ description: 'Role in the channel', enum: ChannelMemberRole })
+  role: ChannelMemberRole;
   @ApiProperty({ description: 'Timestamp user joined the channel' })
   joinedAt: Date;
   @ApiProperty({ description: 'Last read marker timestamp', nullable: true })
@@ -19,9 +23,10 @@ export class ChannelMembershipEntity implements ChannelMembership {
   @ApiProperty({ description: 'Whether the channel is starred by this user' })
   isStarred: boolean;
   @ApiProperty({
-    description: 'Notification preference (ALL | MENTIONS | NONE)',
+    description: 'Notification preference',
+    enum: NotificationLevel,
   })
-  notificationsLevel: string;
+  notificationsLevel: NotificationLevel;
 
   constructor(partial: ChannelMembership) {
     Object.assign(this, partial);
