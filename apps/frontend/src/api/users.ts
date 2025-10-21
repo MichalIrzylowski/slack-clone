@@ -1,25 +1,17 @@
-import { useAuth } from "@/auth/useAuth";
 import { useQuery } from "@tanstack/react-query";
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-if (!BACKEND_URL) console.warn("BACKEND_URL not set");
+import { api } from "./client";
 
 const USERS_QUERY_KEY = ["users"];
 
 export const useGetUsers = () => {
-  const auth = useAuth();
-  if (!auth.user || !auth.token) throw new Error("Not authenticated");
-
-  const query = useQuery({
+  return useQuery({
     queryKey: USERS_QUERY_KEY,
     queryFn: async () => {
-      const res = await fetch(`${BACKEND_URL}/users`, {
-        headers: { Authorization: `Bearer ${auth.token}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch users");
-      return res.json();
+      const response = await api.users.usersControllerFindAll();
+
+      const { data, status } = response;
+      if (status !== 200 || !data) throw new Error("Failed to fetch users");
+      return data;
     },
   });
-
-  return query;
 };

@@ -11,36 +11,47 @@ datasource db {
 }
 
 model Channel {
-  id              String    @id @default(cuid())
-  name            String    @unique
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  isPrivate       Boolean   @default(false)
+  id              String              @id @default(cuid())
+  name            String              @unique
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  isPrivate       Boolean             @default(false)
   deletedAt       DateTime?
   archivedAt      DateTime?
   createdByUserId String? // Placeholder until users implemented
-  // memberships  ChannelMember[]
-  // In future: messages, memberships, workspace relation, etc.
+  memberships     ChannelMembership[]
+  // In future: messages, workspace relation, etc.
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  username     String   @unique
+  id           String              @id @default(cuid())
+  email        String              @unique
+  username     String              @unique
   passwordHash String
-  role         String   @default("USER") // Values: USER | ADMIN (enforced in service layer)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  // Future: preferences, memberships, etc.
+  role         String              @default("USER") // Values: USER | ADMIN (enforced in service layer)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  memberships  ChannelMembership[]
+  // Future: preferences, etc.
 }
 
-// model ChannelMember {
-//   id         String   @id @default(cuid())
-//   channelId  String
-//   userId     String
-//   role       String   @default("MEMBER") // Could be enum in future
-//   joinedAt   DateTime @default(now())
-//   channel    Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
-//   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-//   @@unique([channelId, userId])
-// }
+// NOTE: SQLite provider does not support native enums; using String fields with constrained values.
+// channelMemberRole values: OWNER | ADMIN | MEMBER
+// notificationLevel values: ALL | MENTIONS | NONE
+model ChannelMembership {
+  id                 String    @id @default(cuid())
+  channelId          String
+  userId             String
+  role               String    @default("MEMBER") // OWNER | ADMIN | MEMBER
+  joinedAt           DateTime  @default(now())
+  lastReadAt         DateTime?
+  isMuted            Boolean   @default(false)
+  isStarred          Boolean   @default(false)
+  notificationsLevel String    @default("ALL") // ALL | MENTIONS | NONE
+  channel            Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, userId])
+  @@index([userId])
+  @@index([channelId])
+}

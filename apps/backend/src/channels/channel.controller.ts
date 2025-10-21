@@ -16,12 +16,20 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiQuery,
-  ApiResponse,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
 import { ChannelService } from './channel.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
 import { AuthGuard } from '@nestjs/passport';
+import {
+  ChannelListResponseDto,
+  ChannelResponseDto,
+} from './dto/channel-response.dto';
 
 @ApiTags('channels')
 @Controller('channels')
@@ -36,6 +44,7 @@ export class ChannelController {
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'cursor', required: false })
   @ApiQuery({ name: 'includeArchived', required: false })
+  @ApiOkResponse({ type: ChannelListResponseDto })
   async list(
     @Query('search') search?: string,
     @Query('limit') limit?: string,
@@ -53,7 +62,11 @@ export class ChannelController {
   @Post()
   @ApiBearerAuth('jwt-auth')
   @ApiOperation({ summary: 'Create a new channel' })
-  @ApiResponse({ status: 201, description: 'Channel created' })
+  @ApiCreatedResponse({
+    description: 'Channel created',
+    type: ChannelResponseDto,
+  })
+  @ApiBadRequestResponse({ description: 'Validation failed or duplicate name' })
   @UseGuards(AuthGuard('jwt'))
   async create(@Body() dto: CreateChannelDto) {
     try {
@@ -69,6 +82,9 @@ export class ChannelController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a channel' })
+  @ApiOkResponse({ description: 'Updated channel', type: ChannelResponseDto })
+  @ApiBadRequestResponse({ description: 'Validation failed or duplicate name' })
+  @ApiNotFoundResponse({ description: 'Channel not found' })
   async update(@Param('id') id: string, @Body() dto: UpdateChannelDto) {
     try {
       return await this.channelService.update(id, dto);
@@ -83,6 +99,8 @@ export class ChannelController {
   @Delete(':id')
   @ApiOperation({ summary: 'Soft delete a channel' })
   @HttpCode(204)
+  @ApiNoContentResponse({ description: 'Channel soft-deleted' })
+  @ApiNotFoundResponse({ description: 'Channel not found' })
   async remove(@Param('id') id: string) {
     await this.channelService.remove(id);
   }

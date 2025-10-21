@@ -24,7 +24,7 @@ export const useAuth = () => {
     queryFn: async () => {
       if (!token) return null;
       try {
-        return await meRequest(token);
+        return await meRequest();
       } catch {
         // Invalid/expired token -> clear and return null
         setStoredToken(null);
@@ -69,7 +69,6 @@ export const useAuth = () => {
   return {
     user: meQuery.data,
     token,
-    // Only loading if we actually have a token and are validating it
     isLoading: !!token && meQuery.isLoading,
     isAuthenticated: !!meQuery.data && !!token,
     login: (email: string, password: string) =>

@@ -42,7 +42,7 @@ export const LexicalRichText = () => {
         <AutoFocusPlugin />
         <EmojiPlugin />
         {users.data && (
-          <MentionsPlugin wrapperRef={wrapperRef} options={users?.data} />
+          <MentionsPlugin wrapperRef={wrapperRef} options={users.data.items} />
         )}
       </div>
       <Submit />
