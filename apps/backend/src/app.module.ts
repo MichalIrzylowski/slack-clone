@@ -10,10 +10,18 @@ import { UsersService } from './users/users.service';
 import { RolesGuard } from './auth/roles.guard';
 import { ChatGateway } from './websocket/chat.gateway';
 import { WsJwtGuard } from './websocket/ws-jwt.guard';
+import { MessageController } from './messages/message.controller';
+import { MessageService } from './messages/messages.service';
+import { ChannelMemberGuard } from './messages/channel-member.guard';
 
 @Module({
   imports: [AuthModule],
-  controllers: [AppController, ChannelController, UsersController],
+  controllers: [
+    AppController,
+    ChannelController,
+    UsersController,
+    MessageController,
+  ],
   providers: [
     AppService,
     PrismaService,
@@ -22,6 +30,8 @@ import { WsJwtGuard } from './websocket/ws-jwt.guard';
     UsersService,
     ChatGateway,
     WsJwtGuard,
+    MessageService,
+    ChannelMemberGuard,
   ],
 })
 export class AppModule {}

@@ -32,20 +32,22 @@ model Channel {
   isPrivate       Boolean             @default(false)
   deletedAt       DateTime?
   archivedAt      DateTime?
-  createdByUserId String? // Placeholder until users implemented
+  createdByUserId String?
   memberships     ChannelMembership[]
-  // In future: messages, workspace relation, etc.
+  messages        Message[]           @relation("ChannelMessages")
 }
 
 model User {
-  id           String              @id @default(cuid())
-  email        String              @unique
-  username     String              @unique
-  passwordHash String
-  role         UserRole            @default(USER)
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-  memberships  ChannelMembership[]
+  id               String              @id @default(cuid())
+  email            String              @unique
+  username         String              @unique
+  passwordHash     String
+  role             UserRole            @default(USER)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  memberships      ChannelMembership[]
+  sentMessages     Message[]           @relation("SentMessages")
+  receivedMessages Message[]           @relation("ReceivedMessages")
 }
 
 model ChannelMembership {
@@ -64,4 +66,26 @@ model ChannelMembership {
   @@unique([channelId, userId])
   @@index([userId])
   @@index([channelId])
+}
+
+model Message {
+  id              String    @id @default(cuid())
+  senderId        String
+  channelId       String?
+  recipientUserId String?
+  content         Json
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+  isSilentDeleted Boolean   @default(false)
+
+  sender        User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  channel       Channel? @relation("ChannelMessages", fields: [channelId], references: [id])
+  recipientUser User?    @relation("ReceivedMessages", fields: [recipientUserId], references: [id])
+
+  @@index([channelId])
+  @@index([recipientUserId])
+  @@index([senderId])
+  @@index([channelId, createdAt])
+  @@index([senderId, recipientUserId, createdAt])
 }
