@@ -11,6 +11,9 @@ import {
 import { UseGuards, Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
 import { WsJwtGuard } from './ws-jwt.guard';
+import { WsChannelMemberGuard } from './ws-channel-member.guard';
+import { MessageService } from '../messages/messages.service';
+import { CreateMessageDto } from '../messages/dto/create-message.dto';
 
 @WebSocketGateway({
   cors: {
@@ -22,6 +25,8 @@ export class ChatGateway
 {
   private readonly logger = new Logger(ChatGateway.name);
   @WebSocketServer() private server: Server;
+
+  constructor(private readonly messageService: MessageService) {}
 
   afterInit() {
     this.logger.log('ChatGateway initialized');
@@ -35,20 +40,19 @@ export class ChatGateway
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
-  @UseGuards(WsJwtGuard)
-  @SubscribeMessage('dummy-event')
-  handleDummy(
-    @MessageBody() data: any,
+  @UseGuards(WsJwtGuard, WsChannelMemberGuard)
+  @SubscribeMessage('chat-message')
+  async handleChatMessage(
+    @MessageBody() data: Omit<CreateMessageDto, 'senderId'>,
     @ConnectedSocket() client: Socket & { user?: any },
   ) {
-    console.log('Authenticated user:', client.user);
-    // Build response (ack back to sender)
-    const payload = { message: 'hello world', userId: client.user?.userId };
-    // Broadcast to all OTHER connected clients (excluding sender)
-    client.broadcast.emit('dummy-broadcast', payload);
-    // Optionally also send to everyone including sender:
-    // this.server.emit('dummy-broadcast', payload);
-    // Return ack response to sender
-    return payload;
+    const message = await this.messageService.createMessage({
+      senderId: client.user?.userId,
+      ...data,
+    });
+
+    this.server.to(data.channelId).emit('chat-message', message);
+
+    return { status: 'sent' };
   }
 }

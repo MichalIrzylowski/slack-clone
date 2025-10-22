@@ -10,6 +10,7 @@ import { UsersService } from './users/users.service';
 import { RolesGuard } from './auth/roles.guard';
 import { ChatGateway } from './websocket/chat.gateway';
 import { WsJwtGuard } from './websocket/ws-jwt.guard';
+import { WsChannelMemberGuard } from './websocket/ws-channel-member.guard';
 import { MessageController } from './messages/message.controller';
 import { MessageService } from './messages/messages.service';
 import { ChannelMemberGuard } from './messages/channel-member.guard';
@@ -31,7 +32,8 @@ import { ChannelMemberGuard } from './messages/channel-member.guard';
     ChatGateway,
     WsJwtGuard,
     MessageService,
-    ChannelMemberGuard,
+    ChannelMemberGuard, // HTTP guard (query param based)
+    WsChannelMemberGuard, // WebSocket guard (payload based)
   ],
 })
 export class AppModule {}

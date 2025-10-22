@@ -1,6 +1,13 @@
 import { PrismaClient, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
+// Seed objectives:
+// 1. Ensure core channels exist (general, random, engineering, design)
+// 2. Ensure baseline users (admin + demo users) exist
+// 3. Admin MUST be a member of 'general'
+// 4. Provide sample messages across channels for initial UI population
+// 5. Idempotent & safe on re-run (tolerate duplicates)
+
 let prisma: PrismaClient | null = null;
 function getPrisma() {
   if (!prisma) {
@@ -11,22 +18,50 @@ function getPrisma() {
 
 const mockChannels = ['general', 'random', 'engineering', 'design'];
 
+// Sample message seed definitions (channel messages only for now)
+const messageSeeds: Array<{ channel: string; username: string; text: string }> =
+  [
+    {
+      channel: 'general',
+      username: 'admin',
+      text: 'Welcome to #general – feel free to introduce yourself!',
+    },
+    { channel: 'general', username: 'alice', text: 'Hi everyone 👋' },
+    {
+      channel: 'random',
+      username: 'bob',
+      text: 'Random thought of the day: use more tests.',
+    },
+    {
+      channel: 'engineering',
+      username: 'alice',
+      text: 'Deployment succeeded, nice work team.',
+    },
+    {
+      channel: 'design',
+      username: 'bob',
+      text: 'Uploaded new logo concept. Feedback welcome.',
+    },
+  ];
+
 async function seed() {
   console.log('[Seed] Using DATABASE_URL=', process.env.DATABASE_URL);
   const seedChannels = mockChannels.map((c) => c.trim()).filter(Boolean);
 
-  // Clear existing channels
   const client = getPrisma();
+
+  // Wipe dependent data first (messages -> memberships -> channels/users) for clean slate
+  // If you prefer additive seeding, remove these deleteMany calls.
+  await client.message.deleteMany();
+  await client.channelMembership.deleteMany();
   await client.channel.deleteMany();
   await client.user.deleteMany();
 
-  // Insert fresh channels
-  // Ensure uniqueness manually (Channel.name is unique)
+  // (Re)create channels
   const unique = Array.from(new Set(seedChannels));
-  await client.channel.createMany({
-    data: unique.map((name) => ({ name })),
-  });
-  // Seed initial admin and demo users (simple static passwords for dev only)
+  await client.channel.createMany({ data: unique.map((name) => ({ name })) });
+
+  // Seed users (idempotent via try/catch on uniqueness)
   const hash = (pwd: string) => bcrypt.hash(pwd, 12);
   const usersToCreate = [
     {
@@ -52,10 +87,63 @@ async function seed() {
     try {
       await client.user.create({ data: u });
     } catch (e: any) {
-      // Ignore duplicates on re-run
-      if (e?.code !== 'P2002') throw e;
+      if (e?.code !== 'P2002') throw e; // ignore duplicates
     }
   }
+
+  // Fetch created records for mapping
+  const channels = await client.channel.findMany({
+    select: { id: true, name: true },
+  });
+  const users = await client.user.findMany({
+    select: { id: true, username: true },
+  });
+  const channelMap = new Map(channels.map((c) => [c.name, c.id]));
+  const userMap = new Map(users.map((u) => [u.username, u.id]));
+
+  // Ensure admin membership in 'general'
+  const adminId = userMap.get('admin');
+  const generalId = channelMap.get('general');
+  if (adminId && generalId) {
+    await client.channelMembership
+      .create({
+        data: {
+          channelId: generalId,
+          userId: adminId,
+          role: UserRole.ADMIN as any,
+        },
+      })
+      .catch(() => void 0);
+  }
+
+  // Seed additional memberships? (Optional) – we keep others OUT intentionally per requirement.
+
+  // Prepare message data (only if channel + user exist)
+  const messagesData = messageSeeds
+    .map((m) => {
+      const channelId = channelMap.get(m.channel);
+      const senderId = userMap.get(m.username);
+      if (!channelId || !senderId) return null;
+      return {
+        senderId,
+        channelId,
+        content: { text: m.text },
+      };
+    })
+    .filter(Boolean) as Array<{
+    senderId: string;
+    channelId: string;
+    content: any;
+  }>;
+
+  if (messagesData.length) {
+    await client.message.createMany({ data: messagesData });
+  }
+
+  // Log summary
+  console.log('[Seed] Channels:', channels.length);
+  console.log('[Seed] Users:', users.length);
+  console.log('[Seed] Messages inserted:', messagesData.length);
 }
 
 export async function runSeedOnBootstrap() {
@@ -69,4 +157,12 @@ export async function runSeedOnBootstrap() {
   } finally {
     if (prisma) await prisma.$disconnect();
   }
+}
+
+// Allow running this file directly: `ts-node src/seed/seed.ts` or after transpile `node dist/seed/seed.js`
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+if (require.main === module) {
+  runSeedOnBootstrap()
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));
 }

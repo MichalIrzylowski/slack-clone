@@ -6,7 +6,7 @@ import z from 'zod';
 const messageValidationSchema = z
   .object({
     senderId: z.cuid(),
-    content: z.object({}),
+    content: z.any(), // for now, later make a rich text schema
     channelId: z.cuid().nullable().optional(),
     recipientUserId: z.cuid().nullable().optional(),
   })
@@ -45,7 +45,6 @@ export class MessageService {
       data: validatedMessage,
     });
 
-    this.logger.log(`Message created: ${message.id}`);
     return message;
   }
 }
