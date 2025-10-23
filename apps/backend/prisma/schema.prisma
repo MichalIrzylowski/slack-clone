@@ -73,7 +73,7 @@ model Message {
   senderId        String
   channelId       String?
   recipientUserId String?
-  content         Json
+  content         String
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?

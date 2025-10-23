@@ -26,7 +26,7 @@ export class MessageEntity implements Message {
     description: 'Content of the message as Lexical JSON',
     example: { text: 'Hello, world!' },
   })
-  content: object;
+  content: string;
 
   @ApiProperty({ description: 'When the message was created' })
   createdAt: Date;

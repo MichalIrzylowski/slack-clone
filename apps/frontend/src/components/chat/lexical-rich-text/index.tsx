@@ -11,10 +11,16 @@ import { MentionsPlugin } from "./plugins/mentions-plugin";
 import { useRef } from "react";
 import { useGetUsers } from "@/api/users";
 import { Submit } from "./submit";
+import { SubmitOnEnterPlugin } from "./plugins/submit-on-enter-plugin";
+import type { SerializedEditor } from "lexical";
 
 export const LexicalRichText = () => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const users = useGetUsers();
+
+  const handleSubmit = (value: SerializedEditor) => {
+    console.log(value);
+  };
 
   return (
     <LexicalComposer initialConfig={CONFIG}>
@@ -44,8 +50,9 @@ export const LexicalRichText = () => {
         {users.data && (
           <MentionsPlugin wrapperRef={wrapperRef} options={users.data.items} />
         )}
+        <SubmitOnEnterPlugin onSubmit={handleSubmit} />
       </div>
-      <Submit />
+      <Submit onSubmit={handleSubmit} />
     </LexicalComposer>
   );
 };

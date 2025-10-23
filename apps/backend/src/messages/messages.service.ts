@@ -6,7 +6,7 @@ import z from 'zod';
 const messageValidationSchema = z
   .object({
     senderId: z.cuid(),
-    content: z.any(), // for now, later make a rich text schema
+    content: z.string(),
     channelId: z.cuid().nullable().optional(),
     recipientUserId: z.cuid().nullable().optional(),
   })
@@ -34,6 +34,9 @@ export class MessageService {
     const messages = await this.prisma.message.findMany({
       where: { channelId, deletedAt: null },
       orderBy: { createdAt: 'asc' },
+      include: {
+        sender: { select: { id: true, username: true, email: true } },
+      },
     });
     return messages;
   }

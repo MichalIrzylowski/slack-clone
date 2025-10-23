@@ -20,28 +20,28 @@ export class MessageResponseDto
   id!: string;
 
   @ApiProperty()
-  senderId!: string;
+  senderId: string;
 
   @ApiProperty({ nullable: true })
-  channelId!: string | null;
+  channelId: string | null;
 
   @ApiProperty({ nullable: true })
-  recipientUserId!: string | null;
+  recipientUserId: string | null;
 
   @ApiProperty({
     description: 'Content of the message as Lexical JSON',
     example: { text: 'Hello, world!' },
   })
-  content!: object;
+  content: string;
 
   @ApiProperty()
   createdAt!: Date;
 
   @ApiProperty()
-  updatedAt!: Date;
+  updatedAt: Date;
 
   @ApiProperty({ nullable: true })
-  deletedAt!: Date | null;
+  deletedAt: Date | null;
 
   @ApiProperty()
   isSilentDeleted!: boolean;

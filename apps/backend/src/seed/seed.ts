@@ -18,31 +18,244 @@ function getPrisma() {
 
 const mockChannels = ['general', 'random', 'engineering', 'design'];
 
-// Sample message seed definitions (channel messages only for now)
-const messageSeeds: Array<{ channel: string; username: string; text: string }> =
-  [
-    {
-      channel: 'general',
-      username: 'admin',
-      text: 'Welcome to #general – feel free to introduce yourself!',
-    },
-    { channel: 'general', username: 'alice', text: 'Hi everyone 👋' },
-    {
-      channel: 'random',
-      username: 'bob',
-      text: 'Random thought of the day: use more tests.',
-    },
-    {
-      channel: 'engineering',
-      username: 'alice',
-      text: 'Deployment succeeded, nice work team.',
-    },
-    {
-      channel: 'design',
-      username: 'bob',
-      text: 'Uploaded new logo concept. Feedback welcome.',
-    },
-  ];
+// Sample message seed definitions now include a prebuilt lexical JSON string in `content`
+// This avoids runtime transformation and keeps seed deterministic.
+const messageSeeds: Array<{
+  channel: string;
+  username: string;
+  content: string;
+}> = [
+  {
+    channel: 'general',
+    username: 'admin',
+    content: JSON.stringify({
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'Welcome to #general – feel free to introduce yourself!',
+                type: 'text',
+                version: 1,
+              },
+            ],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+            textFormat: 0,
+            textStyle: '',
+          },
+        ],
+        direction: null,
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    }),
+  },
+  {
+    channel: 'general',
+    username: 'alice',
+    content: JSON.stringify({
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'Hi everyone ',
+                type: 'text',
+                version: 1,
+              },
+              {
+                detail: 0,
+                format: 0,
+                mode: 'token',
+                style: '',
+                text: '👋',
+                type: 'emoji',
+                version: 1,
+                unifiedId: '1f44b',
+              },
+            ],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+            textFormat: 0,
+            textStyle: '',
+          },
+        ],
+        direction: null,
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    }),
+  },
+  {
+    channel: 'random',
+    username: 'bob',
+    content: JSON.stringify({
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'Random thought of the day: use more tests.',
+                type: 'text',
+                version: 1,
+              },
+            ],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+            textFormat: 0,
+            textStyle: '',
+          },
+        ],
+        direction: null,
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    }),
+  },
+  {
+    channel: 'engineering',
+    username: 'alice',
+    content: JSON.stringify({
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'Deployment succeeded, nice work team.',
+                type: 'text',
+                version: 1,
+              },
+            ],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+            textFormat: 0,
+            textStyle: '',
+          },
+        ],
+        direction: null,
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    }),
+  },
+  {
+    channel: 'design',
+    username: 'bob',
+    content: JSON.stringify({
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'Uploaded new logo concept. Feedback welcome.',
+                type: 'text',
+                version: 1,
+              },
+            ],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+            textFormat: 0,
+            textStyle: '',
+          },
+        ],
+        direction: null,
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    }),
+  },
+  {
+    channel: 'general',
+    username: 'admin',
+    content: JSON.stringify({
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'witajcie ',
+                type: 'text',
+                version: 1,
+              },
+              {
+                detail: 0,
+                format: 0,
+                mode: 'token',
+                style: '',
+                text: '🙂',
+                type: 'emoji',
+                version: 1,
+                unifiedId: '1f642',
+              },
+            ],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+            textFormat: 0,
+            textStyle: '',
+          },
+        ],
+        direction: null,
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    }),
+  },
+];
 
 async function seed() {
   console.log('[Seed] Using DATABASE_URL=', process.env.DATABASE_URL);
@@ -116,8 +329,6 @@ async function seed() {
       .catch(() => void 0);
   }
 
-  // Seed additional memberships? (Optional) – we keep others OUT intentionally per requirement.
-
   // Prepare message data (only if channel + user exist)
   const messagesData = messageSeeds
     .map((m) => {
@@ -127,13 +338,13 @@ async function seed() {
       return {
         senderId,
         channelId,
-        content: { text: m.text },
+        content: m.content, // already a JSON string
       };
     })
     .filter(Boolean) as Array<{
     senderId: string;
     channelId: string;
-    content: any;
+    content: string;
   }>;
 
   if (messagesData.length) {
