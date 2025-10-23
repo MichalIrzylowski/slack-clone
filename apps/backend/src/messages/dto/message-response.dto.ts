@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { MessageEntity } from '../entities/message.entity';
+import { UserResponseDto } from 'src/users/dto/user-response.dto';
 
 export class MessageResponseDto
   implements
@@ -14,6 +15,7 @@ export class MessageResponseDto
       | 'updatedAt'
       | 'deletedAt'
       | 'isSilentDeleted'
+      | 'sender'
     >
 {
   @ApiProperty()
@@ -45,4 +47,7 @@ export class MessageResponseDto
 
   @ApiProperty()
   isSilentDeleted!: boolean;
+
+  @ApiProperty({ type: UserResponseDto })
+  sender: UserResponseDto;
 }

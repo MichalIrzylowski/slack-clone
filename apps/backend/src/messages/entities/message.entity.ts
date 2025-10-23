@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Message } from '@prisma/client';
+import { UserResponseDto } from 'src/users/dto/user-response.dto';
 
 export class MessageEntity implements Message {
   @ApiProperty({ description: 'Unique message identifier' })
@@ -23,8 +24,8 @@ export class MessageEntity implements Message {
   recipientUserId: string | null;
 
   @ApiProperty({
-    description: 'Content of the message as Lexical JSON',
-    example: { text: 'Hello, world!' },
+    description: 'Content of the message as Stringified Lexical JSON',
+    example: "{ text: 'Hello, world!' }",
   })
   content: string;
 
@@ -45,6 +46,9 @@ export class MessageEntity implements Message {
       'If true, the message is silently deleted (hidden from regular queries)',
   })
   isSilentDeleted: boolean;
+
+  @ApiProperty({ type: UserResponseDto, description: 'Sender user details' })
+  sender: UserResponseDto;
 
   constructor(partial: Message) {
     Object.assign(this, partial);
