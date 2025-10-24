@@ -12,13 +12,16 @@ import { useRef } from "react";
 import { useGetUsers } from "@/api/users";
 import { Submit } from "./submit";
 import { SubmitOnEnterPlugin } from "./plugins/submit-on-enter-plugin";
-import type { SerializedEditor } from "lexical";
 
 export const LexicalRichText = () => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const users = useGetUsers();
 
-  const handleSubmit = (value: SerializedEditor) => {
+  const handleSubmit = (value: {
+    serialized: string;
+    plainText: string;
+    html: string;
+  }) => {
     console.log(value);
   };
 

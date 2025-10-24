@@ -2,15 +2,22 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateMessageDto {
   @ApiProperty({
-    description: 'ID of the user who is the sender',
+    description: 'ID of the user who is the author',
   })
-  senderId: string;
+  authorId: string;
 
   @ApiProperty({
-    description: 'Content of the message as Lexical JSON',
-    example: { text: 'Hello, world!' },
+    description: 'Serialized message content in Lexical JSON format',
   })
-  content: object;
+  serializedMessage: string;
+
+  @ApiProperty({
+    description: 'Plain text representation of the message content',
+  })
+  plainTextMessage: string;
+
+  @ApiProperty({ description: 'HTML representation of the message content' })
+  htmlMessage: string;
 
   @ApiProperty({
     description: 'ID of the channel this message belongs to',

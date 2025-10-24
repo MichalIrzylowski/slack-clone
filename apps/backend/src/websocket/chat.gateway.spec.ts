@@ -17,10 +17,12 @@ describe('ChatGateway', () => {
         updatedAt: new Date(),
         deletedAt: null,
         isSilentDeleted: false,
-        senderId: dto.senderId,
+        authorId: dto.authorId,
         channelId: dto.channelId ?? null,
         recipientUserId: dto.recipientUserId ?? null,
-        content: dto.content,
+        serializedMessage: dto.serializedMessage,
+        plainTextMessage: dto.plainTextMessage,
+        htmlMessage: dto.htmlMessage,
       })),
     };
 
@@ -60,16 +62,20 @@ describe('ChatGateway', () => {
     const client: any = { user: { userId: 'cuid_user_1' } };
     const data = {
       channelId: 'cuid_channel_1',
-      content: { text: 'Hello channel' },
+      serializedMessage: JSON.stringify({ text: 'Direct hello' }),
+      plainTextMessage: 'Direct hello',
+      htmlMessage: '<p>Direct hello</p>',
     };
 
     const result = await gateway.handleChatMessage(data as any, client);
 
     expect(result).toEqual({ status: 'sent' });
     expect(messageService.createMessage).toHaveBeenCalledWith({
-      senderId: 'cuid_user_1',
+      authorId: 'cuid_user_1',
       channelId: 'cuid_channel_1',
-      content: { text: 'Hello channel' },
+      serializedMessage: JSON.stringify({ text: 'Direct hello' }),
+      plainTextMessage: 'Direct hello',
+      htmlMessage: '<p>Direct hello</p>',
     });
     const toMock = (gateway as any).server.to as jest.Mock;
     expect(toMock).toHaveBeenCalledWith('cuid_channel_1');
@@ -79,7 +85,7 @@ describe('ChatGateway', () => {
       expect.objectContaining({
         id: 'msg_cuid123',
         channelId: 'cuid_channel_1',
-        senderId: 'cuid_user_1',
+        authorId: 'cuid_user_1',
       }),
     );
   });
@@ -90,15 +96,19 @@ describe('ChatGateway', () => {
     const client: any = { user: { userId: 'cuid_user_2' } };
     const data = {
       recipientUserId: 'cuid_user_3',
-      content: { text: 'Direct hello' },
+      serializedMessage: JSON.stringify({ text: 'Direct hello' }),
+      plainTextMessage: 'Direct hello',
+      htmlMessage: '<p>Direct hello</p>',
     };
 
     const result = await gateway.handleChatMessage(data as any, client);
     expect(result).toEqual({ status: 'sent' });
     expect(messageService.createMessage).toHaveBeenCalledWith({
-      senderId: 'cuid_user_2',
+      authorId: 'cuid_user_2',
       recipientUserId: 'cuid_user_3',
-      content: { text: 'Direct hello' },
+      serializedMessage: JSON.stringify({ text: 'Direct hello' }),
+      plainTextMessage: expect.any(String),
+      htmlMessage: expect.any(String),
     });
     const toMock = (gateway as any).server.to as jest.Mock;
     expect(toMock).toHaveBeenCalledWith(undefined); // documents current state

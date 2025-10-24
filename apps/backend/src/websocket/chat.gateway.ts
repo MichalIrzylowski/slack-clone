@@ -43,11 +43,11 @@ export class ChatGateway
   @UseGuards(WsJwtGuard, WsChannelMemberGuard)
   @SubscribeMessage('chat-message')
   async handleChatMessage(
-    @MessageBody() data: Omit<CreateMessageDto, 'senderId'>,
+    @MessageBody() data: Omit<CreateMessageDto, 'authorId'>,
     @ConnectedSocket() client: Socket & { user?: any },
   ) {
     const message = await this.messageService.createMessage({
-      senderId: client.user?.userId,
+      authorId: client.user?.userId,
       ...data,
     });
 

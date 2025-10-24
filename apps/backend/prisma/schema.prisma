@@ -69,23 +69,25 @@ model ChannelMembership {
 }
 
 model Message {
-  id              String    @id @default(cuid())
-  senderId        String
-  channelId       String?
-  recipientUserId String?
-  content         String
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
-  isSilentDeleted Boolean   @default(false)
+  id                String    @id @default(cuid())
+  authorId          String
+  channelId         String?
+  recipientUserId   String?
+  serializedMessage String
+  plainTextMessage  String
+  htmlMessage       String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+  isSilentDeleted   Boolean   @default(false)
 
-  sender        User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  author        User     @relation("SentMessages", fields: [authorId], references: [id], onDelete: Cascade)
   channel       Channel? @relation("ChannelMessages", fields: [channelId], references: [id])
   recipientUser User?    @relation("ReceivedMessages", fields: [recipientUserId], references: [id])
 
   @@index([channelId])
   @@index([recipientUserId])
-  @@index([senderId])
+  @@index([authorId])
   @@index([channelId, createdAt])
-  @@index([senderId, recipientUserId, createdAt])
+  @@index([authorId, recipientUserId, createdAt])
 }

@@ -5,8 +5,10 @@ import z from 'zod';
 
 const messageValidationSchema = z
   .object({
-    senderId: z.cuid(),
-    content: z.string(),
+    authorId: z.cuid(),
+    serializedMessage: z.string().min(1),
+    plainTextMessage: z.string().min(1),
+    htmlMessage: z.string().min(1),
     channelId: z.cuid().nullable().optional(),
     recipientUserId: z.cuid().nullable().optional(),
   })
@@ -35,7 +37,7 @@ export class MessageService {
       where: { channelId, deletedAt: null },
       orderBy: { createdAt: 'asc' },
       include: {
-        sender: { select: { id: true, username: true, email: true } },
+        author: { select: { id: true, username: true, email: true } },
       },
     });
     return messages;

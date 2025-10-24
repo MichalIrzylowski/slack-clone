@@ -7,22 +7,24 @@ export class MessageResponseDto
     Pick<
       MessageEntity,
       | 'id'
-      | 'senderId'
+      | 'authorId'
       | 'channelId'
       | 'recipientUserId'
-      | 'content'
+      | 'serializedMessage'
+      | 'plainTextMessage'
+      | 'htmlMessage'
       | 'createdAt'
       | 'updatedAt'
       | 'deletedAt'
       | 'isSilentDeleted'
-      | 'sender'
+      | 'author'
     >
 {
   @ApiProperty()
   id!: string;
 
   @ApiProperty()
-  senderId: string;
+  authorId: string;
 
   @ApiProperty({ nullable: true })
   channelId: string | null;
@@ -30,11 +32,14 @@ export class MessageResponseDto
   @ApiProperty({ nullable: true })
   recipientUserId: string | null;
 
-  @ApiProperty({
-    description: 'Content of the message as Lexical JSON',
-    example: { text: 'Hello, world!' },
-  })
-  content: string;
+  @ApiProperty()
+  serializedMessage: string;
+
+  @ApiProperty()
+  plainTextMessage: string;
+
+  @ApiProperty()
+  htmlMessage: string;
 
   @ApiProperty()
   createdAt!: Date;
@@ -49,5 +54,5 @@ export class MessageResponseDto
   isSilentDeleted!: boolean;
 
   @ApiProperty({ type: UserResponseDto })
-  sender: UserResponseDto;
+  author: UserResponseDto;
 }

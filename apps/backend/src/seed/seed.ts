@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole } from '@prisma/client';
+import { PrismaClient, UserRole, ChannelMemberRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 // Seed objectives:
@@ -323,28 +323,77 @@ async function seed() {
         data: {
           channelId: generalId,
           userId: adminId,
-          role: UserRole.ADMIN as any,
+          role: ChannelMemberRole.ADMIN,
         },
       })
       .catch(() => void 0);
   }
 
-  // Prepare message data (only if channel + user exist)
+  // Conversion helper from lexical JSON to plain text + very naive HTML
+  function lexicalJsonToPlainAndHtml(serialized: string): {
+    plain: string;
+    html: string;
+  } {
+    try {
+      const obj = JSON.parse(serialized);
+      const texts: string[] = [];
+      function walk(n: any) {
+        if (!n) return;
+        if (Array.isArray(n)) {
+          n.forEach(walk);
+          return;
+        }
+        if (typeof n === 'object') {
+          if (typeof n.text === 'string') texts.push(n.text);
+          if (n.children) walk(n.children);
+        }
+      }
+      walk(obj.root?.children);
+      const plain = texts.join('');
+      let html = '';
+      const paragraphs = obj.root?.children || [];
+      for (const p of paragraphs) {
+        if (p?.type === 'paragraph') {
+          const parts: string[] = [];
+          (p.children || []).forEach((cn: any) => {
+            if (cn.text) {
+              const escaped = cn.text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+              parts.push(escaped);
+            }
+          });
+          html += `<p>${parts.join('')}</p>`;
+        }
+      }
+      return { plain, html: html || plain };
+    } catch {
+      return { plain: '', html: '' };
+    }
+  }
+
+  // Prepare message data (only if channel + user exist) aligned with Message model
   const messagesData = messageSeeds
     .map((m) => {
       const channelId = channelMap.get(m.channel);
-      const senderId = userMap.get(m.username);
-      if (!channelId || !senderId) return null;
+      const authorId = userMap.get(m.username);
+      if (!channelId || !authorId) return null;
+      const { plain, html } = lexicalJsonToPlainAndHtml(m.content);
       return {
-        senderId,
+        authorId,
         channelId,
-        content: m.content, // already a JSON string
+        serializedMessage: m.content,
+        plainTextMessage: plain,
+        htmlMessage: html,
       };
     })
     .filter(Boolean) as Array<{
-    senderId: string;
+    authorId: string;
     channelId: string;
-    content: string;
+    serializedMessage: string;
+    plainTextMessage: string;
+    htmlMessage: string;
   }>;
 
   if (messagesData.length) {

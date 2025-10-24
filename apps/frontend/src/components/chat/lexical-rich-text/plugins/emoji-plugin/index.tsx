@@ -2,7 +2,7 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import { TextNode } from "lexical";
 import { useEffect } from "react";
 import findEmoji from "./find-emoji";
-import { $createEmojiNode } from "./emoji-node";
+import { $createEmojiNode } from "../../../nodes/emoji-node";
 
 function $updateTextNodeWithEmoji(node: TextNode) {
   if (!node.isSimpleText() || node.hasFormat("code")) {

@@ -5,11 +5,15 @@ import {
   COMMAND_PRIORITY_HIGH,
   $getRoot,
   $createParagraphNode,
-  type SerializedEditor,
 } from "lexical";
+import { $generateHtmlFromNodes } from "@lexical/html";
 
 type Props = {
-  onSubmit: (value: SerializedEditor) => void;
+  onSubmit: (value: {
+    serialized: string;
+    plainText: string;
+    html: string;
+  }) => void;
 };
 
 export const SubmitOnEnterPlugin = ({ onSubmit }: Props) => {
@@ -25,7 +29,15 @@ export const SubmitOnEnterPlugin = ({ onSubmit }: Props) => {
         }
         // Prevent newline and submit instead
         event.preventDefault();
-        onSubmit(editor.toJSON());
+        const editorState = editor.getEditorState();
+        const serialized = JSON.stringify(editorState.toJSON());
+        let plainText = "";
+        let html = "";
+        editorState.read(() => {
+          plainText = $getRoot().getTextContent();
+          html = $generateHtmlFromNodes(editor);
+        });
+        onSubmit({ serialized, plainText, html });
         editor.update(() => {
           const root = $getRoot();
           root.clear();

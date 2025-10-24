@@ -8,7 +8,7 @@ import ReactDOM from "react-dom";
 import { MentionsMenu } from "./mentions-menu";
 import { MenuOption } from "./menu-option";
 import type { TextNode } from "lexical";
-import { $createMentionNode } from "./mention-node";
+import { $createMentionNode } from "../../../nodes/mention-node";
 
 export interface MentionsPluginProps<T extends { id: string; name: string }> {
   wrapperRef: RefObject<HTMLDivElement | null>;
